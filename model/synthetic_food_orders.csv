@@ -1,0 +1,329 @@
+user_id,item,frequency
+1,Jollof Rice,2
+1,Pasta,1
+1,Pizza,5
+1,Goat Meat,1
+2,Fried Rice,2
+2,Jollof Rice,5
+2,Egusi Soup,4
+2,Burger,2
+2,Pizza,4
+2,Pasta,5
+2,Sandwich,3
+2,Salad,1
+2,Plantain,2
+3,Fufu,3
+3,Pasta,3
+3,Suya,5
+3,Burger,3
+3,Ice Cream,1
+3,Fried Rice,4
+3,Plantain,5
+3,Fish Stew,1
+3,Beans,4
+4,Goat Meat,1
+4,Sandwich,1
+4,Amala,2
+4,Burger,3
+5,Pizza,4
+5,Efo Riro,3
+5,Pounded Yam,2
+5,Pasta,3
+6,Burger,3
+6,Pasta,5
+6,Egusi Soup,2
+6,Shawarma,3
+6,Pizza,1
+6,Goat Meat,2
+6,Chicken Wings,1
+6,Ice Cream,3
+7,Pasta,4
+7,Egusi Soup,2
+7,Burger,3
+7,Fufu,2
+7,Goat Meat,2
+7,Fish Stew,5
+7,Pizza,5
+7,Chicken Wings,3
+7,Plantain,5
+8,Salad,1
+8,Pounded Yam,2
+8,Amala,2
+8,Pizza,4
+8,Suya,5
+8,Pasta,1
+8,Fish Stew,4
+8,Fried Rice,4
+8,Jollof Rice,5
+9,Fish Stew,3
+9,Pasta,1
+9,Goat Meat,3
+9,Jollof Rice,4
+9,Efo Riro,2
+9,Fufu,4
+9,Salad,1
+9,Pounded Yam,3
+9,Suya,5
+9,Plantain,2
+10,Sandwich,3
+10,Fish Stew,2
+10,Burger,5
+10,Suya,5
+11,Ice Cream,1
+11,Fufu,1
+11,Chicken Wings,3
+12,Pizza,1
+12,Fried Rice,5
+12,Ice Cream,2
+12,Egusi Soup,2
+12,Fish Stew,4
+12,Amala,5
+12,Goat Meat,2
+13,Fish Stew,3
+13,Beans,4
+13,Burger,5
+13,Goat Meat,4
+13,Sandwich,1
+13,Ice Cream,2
+13,Fufu,2
+14,Fufu,5
+14,Jollof Rice,2
+14,Goat Meat,1
+14,Pizza,1
+15,Pizza,3
+15,Egusi Soup,1
+15,Fried Rice,5
+16,Pasta,4
+16,Chicken Wings,4
+16,Burger,2
+16,Suya,1
+16,Salad,1
+16,Efo Riro,4
+17,Beans,3
+17,Ice Cream,1
+17,Plantain,2
+17,Fried Rice,2
+17,Efo Riro,2
+17,Jollof Rice,5
+17,Burger,4
+17,Amala,2
+18,Shawarma,1
+18,Pasta,5
+18,Plantain,1
+18,Pizza,1
+18,Egusi Soup,2
+18,Fish Stew,2
+18,Pounded Yam,4
+18,Salad,4
+18,Fried Rice,4
+19,Pounded Yam,3
+19,Fried Rice,4
+19,Shawarma,3
+19,Ice Cream,4
+19,Jollof Rice,5
+19,Burger,4
+20,Burger,3
+20,Sandwich,1
+20,Ice Cream,1
+20,Fried Rice,5
+20,Fish Stew,4
+21,Fried Rice,5
+21,Fish Stew,1
+21,Egusi Soup,2
+21,Shawarma,4
+21,Goat Meat,1
+22,Salad,3
+22,Fried Rice,2
+22,Egusi Soup,3
+22,Beans,2
+22,Fufu,3
+22,Plantain,4
+23,Sandwich,4
+23,Plantain,5
+23,Fufu,5
+23,Egusi Soup,1
+23,Jollof Rice,1
+24,Fish Stew,2
+24,Pasta,3
+24,Suya,3
+24,Amala,2
+24,Egusi Soup,4
+24,Plantain,5
+25,Ice Cream,3
+25,Fish Stew,1
+25,Jollof Rice,1
+25,Sandwich,5
+25,Efo Riro,2
+25,Plantain,3
+25,Egusi Soup,3
+26,Fufu,1
+26,Burger,1
+26,Pasta,4
+26,Fish Stew,3
+26,Chicken Wings,1
+26,Suya,1
+27,Suya,1
+27,Pasta,2
+27,Shawarma,5
+27,Plantain,1
+27,Beans,3
+27,Salad,5
+27,Jollof Rice,5
+27,Fried Rice,2
+28,Suya,2
+28,Fried Rice,1
+28,Sandwich,3
+28,Amala,5
+28,Salad,4
+28,Plantain,5
+28,Shawarma,2
+28,Efo Riro,2
+28,Fufu,2
+29,Beans,2
+29,Jollof Rice,3
+29,Shawarma,2
+29,Fufu,1
+29,Ice Cream,4
+30,Chicken Wings,4
+30,Pizza,3
+30,Burger,3
+31,Pizza,1
+31,Jollof Rice,3
+31,Burger,3
+31,Pounded Yam,5
+31,Fufu,4
+31,Suya,5
+32,Jollof Rice,4
+32,Efo Riro,3
+32,Pasta,3
+32,Shawarma,4
+32,Goat Meat,5
+32,Ice Cream,5
+32,Fried Rice,1
+32,Sandwich,4
+33,Pasta,4
+33,Fried Rice,1
+33,Beans,3
+33,Jollof Rice,5
+33,Burger,3
+33,Shawarma,1
+34,Fish Stew,5
+34,Sandwich,2
+34,Beans,2
+34,Fufu,4
+34,Pounded Yam,4
+34,Amala,2
+34,Suya,5
+35,Pounded Yam,5
+35,Goat Meat,5
+35,Jollof Rice,3
+35,Sandwich,4
+35,Fish Stew,4
+35,Efo Riro,4
+35,Burger,2
+36,Shawarma,3
+36,Egusi Soup,2
+36,Sandwich,2
+36,Fish Stew,2
+36,Fufu,1
+36,Fried Rice,1
+36,Beans,2
+36,Pounded Yam,4
+36,Efo Riro,5
+36,Chicken Wings,1
+37,Beans,1
+37,Salad,4
+37,Burger,2
+37,Pounded Yam,2
+37,Chicken Wings,5
+37,Goat Meat,4
+37,Efo Riro,1
+37,Egusi Soup,5
+37,Fufu,2
+37,Jollof Rice,1
+38,Suya,5
+38,Plantain,4
+38,Fish Stew,2
+38,Fufu,4
+38,Salad,4
+38,Sandwich,3
+38,Beans,2
+38,Amala,3
+38,Pasta,5
+38,Burger,4
+39,Pasta,3
+39,Plantain,3
+39,Egusi Soup,5
+39,Sandwich,1
+39,Pizza,2
+39,Suya,2
+40,Pounded Yam,3
+40,Suya,5
+40,Burger,4
+40,Egusi Soup,4
+40,Beans,1
+40,Goat Meat,2
+41,Pounded Yam,4
+41,Salad,5
+41,Jollof Rice,5
+41,Ice Cream,5
+41,Chicken Wings,2
+41,Goat Meat,4
+41,Shawarma,2
+41,Suya,3
+41,Burger,4
+42,Jollof Rice,1
+42,Pounded Yam,4
+42,Fufu,5
+42,Salad,5
+42,Shawarma,1
+42,Beans,1
+42,Pizza,4
+42,Egusi Soup,2
+42,Sandwich,4
+42,Pasta,2
+43,Pasta,2
+43,Pounded Yam,4
+43,Fufu,3
+44,Pounded Yam,5
+44,Pasta,1
+44,Beans,3
+44,Salad,2
+44,Egusi Soup,1
+44,Pizza,1
+44,Jollof Rice,1
+44,Amala,2
+45,Jollof Rice,1
+45,Suya,5
+45,Pizza,2
+45,Salad,4
+45,Chicken Wings,3
+45,Fufu,3
+46,Ice Cream,5
+46,Efo Riro,1
+46,Shawarma,3
+46,Sandwich,5
+46,Salad,4
+47,Burger,5
+47,Egusi Soup,1
+47,Pizza,3
+47,Efo Riro,5
+47,Sandwich,4
+47,Beans,3
+47,Fufu,1
+47,Chicken Wings,5
+47,Fried Rice,3
+48,Beans,4
+48,Chicken Wings,3
+48,Efo Riro,4
+49,Beans,4
+49,Shawarma,4
+49,Fish Stew,5
+49,Pasta,3
+49,Chicken Wings,3
+50,Egusi Soup,5
+50,Pasta,4
+50,Plantain,3
+50,Pizza,1
+50,Goat Meat,4
+50,Sandwich,3
