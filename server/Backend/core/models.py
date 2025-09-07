@@ -16,7 +16,7 @@ class Product(models.Model):
     def in_stock(self):
         return self.stock > 0
 
-    def str(self):
+    def __str__(self):
         return self.name
 
 class Order(models.Model):
@@ -36,7 +36,7 @@ class Order(models.Model):
 
     products = models.ManyToManyField(Product, through="OrderItem", related_name="orders")
 
-    def str(self):
+    def __str__(self):
         return f"Order {self.order_id} by {self.user.username}"
 
 class OrderItem(models.Model):
@@ -52,5 +52,5 @@ class OrderItem(models.Model):
     def item_subtotal(self):
         return self.product.price * self.quantity
 
-    def str(self):
+    def __str__(self):
         return f"{self.quantity} x {self.product.name} in Order {self.order.order_id}"
