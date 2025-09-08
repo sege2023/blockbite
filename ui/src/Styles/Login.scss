@@ -1,0 +1,72 @@
+.cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1.2em;
+  background-color: #14F195; 
+  margin-left: 2px;
+  animation: blink 0.8s step-end infinite;
+}
+.type{
+    margin-top: -20px;
+}
+
+@keyframes blink {
+  50% {
+    background-color: transparent;
+  }
+}
+
+
+Form{
+    margin-left: 10%;
+    margin-top: 8%;
+    .form{
+        width: 90%;
+        border-radius: 10px;
+        height: 40px;
+        padding-left: 10px;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+    .error{
+        color: red;
+        font-size: 12px;
+        text-align: center;
+    }
+    .login{
+        background: linear-gradient(90deg, #9945FF 0%, #14F195 100%);
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        width: 90%;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        margin-top: 20px;
+
+    }
+    .login:hover{
+        opacity: 0.8;
+    }
+    .acc{
+        text-align: center;
+        font-weight: 300;
+        font-size: 13px;
+        margin-left: -50px;
+        margin-top: 10px;
+        a{
+            color: #14F195;
+            cursor: pointer;
+        }
+
+    }
+    .ven{
+        text-align: center;
+        font-weight: 300;
+        font-size: 13px;
+        margin-left: -50px;
+        margin-top: 50px;
+        margin-bottom: 20px;
+    }
+}
