@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Product, Order, OrderItem
-from .serializers import ProductSerializer, OrderSerializer
+from .models import Product, Order, OrderItem, User
+from .serializers import ProductSerializer, OrderSerializer, UserSerializer
 from rest_framework.viewsets import generics
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 
@@ -37,3 +37,9 @@ class UserOrderListApiView(generics.ListAPIView):
         user = self.request.user
         qs = super().get_queryset()
         return qs.filter(user=user)
+    
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
