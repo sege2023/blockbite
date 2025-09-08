@@ -127,6 +127,10 @@ export default function SignUpForm() {
           <div>
             <button type="submit" className="sign">Sign Up</button>
           </div>
+          <h3 className="lo">Already have an account?
+            <a href="/"> Login</a>
+          </h3>
+          <h3 className='ven'>Sign up as a vendor</h3>
 
           
         </Form>

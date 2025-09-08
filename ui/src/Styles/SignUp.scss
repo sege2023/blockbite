@@ -49,4 +49,16 @@ Form{
         transition: opacity 0.3s ease;
         margin-top: 20px;
     }
+    .lo{
+        text-align: center;
+        font-weight: 300;
+        font-size: 13px;
+        margin-left: -50px;
+        margin-top: 10px;
+        a{
+            color: #14F195;
+            cursor: pointer;
+        }
+
+    }
 }
