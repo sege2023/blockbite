@@ -6,4 +6,7 @@ urlpatterns = [
     path('products/<pk>/', views.ProductDetailApiView.as_view()),
     path('orders/', views.OrderListApiView.as_view()),
     path('user-orders/', views.UserOrderListApiView.as_view()),
+    path("api/user/register/", views.RegisterView.as_view(), name="register"),
+    path("api/auth/", views.LoginView.as_view(), name="login"),
+#    path("users", views.UserListApiView.as_view(), name="users"),
 ]
