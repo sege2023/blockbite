@@ -27,6 +27,9 @@ class CustomUserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=False)
+    name = models.CharField(max_length=253, blank=True, null=True)
+    wallet_address = models.CharField(max_length=255, unique=True, blank=True, null=True)
+
     is_staff = models.BooleanField(
         gettext_lazy('Staff Status'), default=False,
         help_text= gettext_lazy('Designates whether the user can log in the site')
@@ -38,17 +41,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
 
-    def get_full_name(self):
-        return self.email
     
-    def get_short_name(self):
-        return self.email
-
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
