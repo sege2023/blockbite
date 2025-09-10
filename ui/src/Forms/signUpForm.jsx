@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-// Yup validation schema
+
 const signUpSchema = Yup.object().shape({
   fullName: Yup.string()
     .min(3, "Full Name is not valid")
@@ -58,9 +58,18 @@ export default function SignUpForm() {
         confirmPassword: "",
       }}
       validationSchema={signUpSchema}
-      onSubmit={(values) => {
+      onSubmit={(values, { resetForm }) => {
         console.log(values);
+        
+
+  
+       localStorage.setItem("token", "true");
+       alert("Sign Up Successful!");
+  
+       window.location.href = "/Vendors";
+        resetForm();
       }}
+
     >
       {() => (
         <Form>
@@ -130,7 +139,7 @@ export default function SignUpForm() {
           <h3 className="lo">Already have an account?
             <a href="/"> Login</a>
           </h3>
-          <h3 className='ven'>Sign up as a vendor</h3>
+          {/* <h3 className='ven'>Sign up as a vendor</h3> */}
 
           
         </Form>

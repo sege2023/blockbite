@@ -1,6 +1,7 @@
 import React from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
+import { useNavigate } from 'react-router-dom'
 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
@@ -17,13 +18,21 @@ const loginSchema = Yup.object().shape({
 })
 
 export default function LoginForm() {
+  const navigate = useNavigate()
+
+  const handleLogin = (values) => {
+    console.log(values)
+    
+    localStorage.setItem('token', 'true')
+    alert("Login Successful")
+    navigate('/Vendors') 
+  }
+
   return (
     <Formik
       initialValues={{ email: '', username: '', password: '' }}
       validationSchema={loginSchema}
-      onSubmit={(values) => {
-        console.log(values)
-      }}
+      onSubmit={handleLogin}
     >
       {() => (
         <Form>
@@ -49,9 +58,8 @@ export default function LoginForm() {
           <h3 className='acc'>Don't have an account? 
             <a href='/signup'> Create Account</a>
           </h3>
-          <h3 className='ven'>Sign up as a vendor</h3>
+          {/* <h3 className='ven'>Sign up as a vendor</h3> */}
         </Form>
-        
       )}
     </Formik>
   )
