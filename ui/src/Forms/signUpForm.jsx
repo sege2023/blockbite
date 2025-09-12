@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
-
 
 const signUpSchema = Yup.object().shape({
   fullName: Yup.string()
     .min(3, "Full Name is not valid")
     .max(30, "Full Name is too long"),
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is Required"),
+  email: Yup.string().email("Invalid email").required("Email is Required"),
   username: Yup.string()
     .min(3, "Username is not unique")
     .max(15, "Username is too long")
@@ -20,7 +18,7 @@ const signUpSchema = Yup.object().shape({
     .matches(/[A-Z]/, "Must contain at least one uppercase letter")
     .matches(/[a-z]/, "Must contain at least one lowercase letter")
     .matches(/[0-9]/, "Must contain at least one number")
-    .matches(/[!@#$%^&*(),.?":{}|<>]/, "Must contain at least one special character")
+    .matches(/[!@#$%^&*(),.?:{}|<>]/, "Must contain at least one special character")
     .required("Password is Required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match")
@@ -29,8 +27,8 @@ const signUpSchema = Yup.object().shape({
 
 export default function SignUpForm() {
   const [walletAddress, setWalletAddress] = useState(null);
+  const navigate = useNavigate();   
 
-  
   const connectWallet = async () => {
     try {
       if ("solana" in window) {
@@ -41,10 +39,44 @@ export default function SignUpForm() {
           console.log("Connected wallet:", resp.publicKey.toString());
         }
       } else {
-        alert("Phantom wallet not found. Please install it from your store.");
+        alert("Phantom wallet not found. Please install it.");
       }
     } catch (err) {
       console.error("Wallet connection error:", err);
+    }
+  };
+
+  const handleSignUp = async (values, { resetForm }) => {
+    try {
+      const payload = {
+        name: values.fullName,
+        email: values.email,
+        username: values.username,
+        password: values.password,
+        wallet_address: walletAddress || null, 
+      };
+
+      const res = await fetch("http://127.0.0.1:8000/api/user/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("Register response:", data);
+
+      if (res.ok) {
+        alert("Account created successfully!");
+        resetForm();
+        setWalletAddress(null);
+        navigate("/Vendors");   
+      } else {
+        alert("Signup failed: " + (data.detail || JSON.stringify(data)));
+        resetForm();
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      resetForm();
     }
   };
 
@@ -58,78 +90,43 @@ export default function SignUpForm() {
         confirmPassword: "",
       }}
       validationSchema={signUpSchema}
-      onSubmit={(values, { resetForm }) => {
-        console.log(values);
-        
-
-  
-       localStorage.setItem("token", "true");
-       alert("Sign Up Successful!");
-  
-       window.location.href = "/Vendors";
-        resetForm();
-      }}
-
+      onSubmit={handleSignUp}
     >
       {() => (
         <Form>
           <div>
-            <label htmlFor="fullName">Full Name</label><br />
-            <Field
-              name="fullName"
-              type="text"
-              className="bg-[#33263B] formm"
-              placeholder="Enter your full name"
-            />
+            <label>Full Name</label><br />
+            <Field name="fullName" type="text" className="bg-[#33263B] formm" />
             <ErrorMessage name="fullName" component="div" className="error" />
           </div>
 
           <div>
-            <label htmlFor="email">Email</label><br />
-            <Field
-              name="email"
-              type="email"
-              className="bg-[#33263B] formm"
-              placeholder="Enter your email"
-            />
+            <label>Email</label><br />
+            <Field name="email" type="email" className="bg-[#33263B] formm" />
             <ErrorMessage name="email" component="div" className="error" />
           </div>
 
           <div>
-            <label htmlFor="username">Username</label><br />
-            <Field
-              name="username"
-              type="text"
-              className="bg-[#33263B] formm"
-              placeholder="Choose a username"
-            />
+            <label>Username</label><br />
+            <Field name="username" type="text" className="bg-[#33263B] formm" />
             <ErrorMessage name="username" component="div" className="error" />
           </div>
 
           <div>
-            <label htmlFor="password">Password</label><br />
-            <Field
-              name="password"
-              type="password"
-              className="bg-[#33263B] formm"
-              placeholder="Create a password"
-            />
+            <label>Password</label><br />
+            <Field name="password" type="password" className="bg-[#33263B] formm" />
             <ErrorMessage name="password" component="div" className="error" />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword">Confirm Password</label><br />
-            <Field
-              name="confirmPassword"
-              type="password"
-              className="bg-[#33263B] formm"
-              placeholder="Confirm password"
-            />
+            <label>Confirm Password</label><br />
+            <Field name="confirmPassword" type="password" className="bg-[#33263B] formm" />
             <ErrorMessage name="confirmPassword" component="div" className="error" />
           </div>
+
           <div>
             <button type="button" onClick={connectWallet} className="wallet">
-              {walletAddress ? `Connected: ${walletAddress.slice(0, 6)}...` : " 🧼Connect Phantom Wallet"}
+              {walletAddress ? `Connected: ${walletAddress.slice(0, 6)}...` : "💸Connect Phantom Wallet"}
             </button>
           </div>
 
@@ -139,9 +136,6 @@ export default function SignUpForm() {
           <h3 className="lo">Already have an account?
             <a href="/"> Login</a>
           </h3>
-          {/* <h3 className='ven'>Sign up as a vendor</h3> */}
-
-          
         </Form>
       )}
     </Formik>
