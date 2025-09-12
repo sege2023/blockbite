@@ -29,7 +29,7 @@ export default function SignUpForm() {
   const [walletAddress, setWalletAddress] = useState(null);
   const navigate = useNavigate();   
 
-  const connectWallet = async () => {
+  const connect = async () => {
     try {
       if ("solana" in window) {
         const provider = window.solana;
@@ -48,12 +48,18 @@ export default function SignUpForm() {
 
   const handleSignUp = async (values, { resetForm }) => {
     try {
+      // Wallet must be connected
+      if (!walletAddress) {
+        alert("Please connect your Phantom wallet before signing up.");
+        return;
+      }
+
       const payload = {
         name: values.fullName,
         email: values.email,
         username: values.username,
         password: values.password,
-        wallet_address: walletAddress || null, 
+        wallet_address: walletAddress, 
       };
 
       const res = await fetch("http://127.0.0.1:8000/api/user/register/", {
@@ -66,7 +72,7 @@ export default function SignUpForm() {
       console.log("Register response:", data);
 
       if (res.ok) {
-        alert("Account created successfully!");
+        alert("Account created successfully");
         resetForm();
         setWalletAddress(null);
         navigate("/Vendors");   
@@ -125,7 +131,7 @@ export default function SignUpForm() {
           </div>
 
           <div>
-            <button type="button" onClick={connectWallet} className="wallet">
+            <button type="button" onClick={connect} className="wallet">
               {walletAddress ? `Connected: ${walletAddress.slice(0, 6)}...` : "💸Connect Phantom Wallet"}
             </button>
           </div>

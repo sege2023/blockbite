@@ -13,7 +13,7 @@ const loginSchema = Yup.object().shape({
 })
 
 export default function LoginForm() {
-  // Phantom wallet login
+  // Placeholder wallet login (no backend yet)
   const handlePhantomLogin = async () => {
     if (window.solana && window.solana.isPhantom) {
       try {
@@ -22,37 +22,19 @@ export default function LoginForm() {
 
         console.log("Phantom wallet connected:", walletAddress)
 
-        // Call backend login with wallet
-        const res = await fetch("http://127.0.0.1:8000/api/auth/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet_address: walletAddress }),
-        })
-
-        const data = await res.json()
-        console.log("Backend response:", data)
-
-        if (res.ok) {
-          // Save token if exists
-          if (data.access && data.refresh) {
-            localStorage.setItem("token", data.access)
-            localStorage.setItem("refresh", data.refresh)
-          } else {
-            localStorage.setItem("user", JSON.stringify(data))
-          }
-          window.location.href = "/vendors"
-        } else {
-          alert("Wallet login failed: " + (data.detail || "Unknown error"))
-        }
+        // TODO: Replace with backend API when ready
+        alert("Wallet connected: " + walletAddress)
+        window.location.href = "/vendors"
       } catch (err) {
         console.error("Wallet connection failed:", err)
+        alert("Wallet connection failed. Check Phantom extension.")
       }
     } else {
       alert("Phantom wallet not found. Please install it.")
     }
   }
 
-  // Email + password login
+  // Email login flow (works with backend)
   const handleEmailLogin = async (values) => {
     try {
       const res = await fetch("http://127.0.0.1:8000/api/auth/", {
@@ -65,7 +47,6 @@ export default function LoginForm() {
       console.log("Backend response:", data)
 
       if (res.ok) {
-        // Save token if exists
         if (data.access && data.refresh) {
           localStorage.setItem("token", data.access)
           localStorage.setItem("refresh", data.refresh)
@@ -74,10 +55,11 @@ export default function LoginForm() {
         }
         window.location.href = "/vendors"
       } else {
-        alert("Login failed: " + (data.detail || "Unknown error"))
+        alert(data.detail || "This email or password is incorrect.")
       }
     } catch (err) {
       console.error("Login error:", err)
+      alert("Something went wrong. Try again.")
     }
   }
 
@@ -109,7 +91,7 @@ export default function LoginForm() {
               onClick={handlePhantomLogin}
               className="formm bg-[#33263B]"
             >
-              💸Login with Phantom Wallet
+              💸 Login with Phantom Wallet
             </button>
           </div>
 
