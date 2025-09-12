@@ -13,7 +13,7 @@ const loginSchema = Yup.object().shape({
 })
 
 export default function LoginForm() {
-  // Placeholder wallet login (no backend yet)
+  
   const handlePhantomLogin = async () => {
     if (window.solana && window.solana.isPhantom) {
       try {
@@ -22,7 +22,7 @@ export default function LoginForm() {
 
         console.log("Phantom wallet connected:", walletAddress)
 
-        // TODO: Replace with backend API when ready
+        
         alert("Wallet connected: " + walletAddress)
         window.location.href = "/vendors"
       } catch (err) {
@@ -34,7 +34,7 @@ export default function LoginForm() {
     }
   }
 
-  // Email login flow (works with backend)
+  
   const handleEmailLogin = async (values) => {
     try {
       const res = await fetch("http://127.0.0.1:8000/api/auth/", {
