@@ -7,14 +7,15 @@ const Log = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="main">
-      <div>
+    <div >
+      <div className="main">
         <img
           src={Arrow}
           alt="arrow"
           className="arrow cursor-pointer"
           onClick={() => navigate("/")} 
         />
+        <h1>Blockbite</h1>
         
       </div>
     </div>
