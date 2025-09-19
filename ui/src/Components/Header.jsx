@@ -26,7 +26,7 @@ export default function Header({ onSearch, onFilter }) {
         className="menu-header__search"
       />
 
-      <div className="menu-header__filters">
+    <div className="menu-header__filters">
         {filters.map((filter) => (
           <button
             key={filter}
