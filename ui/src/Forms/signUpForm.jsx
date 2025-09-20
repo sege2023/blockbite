@@ -48,7 +48,7 @@ export default function SignUpForm() {
 
   const handleSignUp = async (values, { resetForm }) => {
     try {
-      // Wallet must be connected
+      
       if (!walletAddress) {
         alert("Please connect your Phantom wallet before signing up.");
         return;

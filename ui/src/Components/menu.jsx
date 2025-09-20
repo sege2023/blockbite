@@ -3,8 +3,8 @@ import { FaHeart } from "react-icons/fa";
 
 const MenuItem = ({ name, price, image, onAdd, onFav }) => {
   return (
-    <div className="menu-item">
-      <div className="menu-item__image">
+    <div className="iitem">
+      <div className="imager">
         <img src={image} alt={name} />
         <button className="fav-btn" onClick={onFav}>
           <FaHeart />

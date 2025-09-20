@@ -13,6 +13,7 @@ const loginSchema = Yup.object().shape({
 })
 
 export default function LoginForm() {
+
   
   const handlePhantomLogin = async () => {
     if (window.solana && window.solana.isPhantom) {
@@ -21,20 +22,18 @@ export default function LoginForm() {
         const walletAddress = response.publicKey.toString()
 
         console.log("Phantom wallet connected:", walletAddress)
-
-        
         alert("Wallet connected: " + walletAddress)
-        window.location.href = "/vendors"
+        window.location.href = "/vendors" 
       } catch (err) {
         console.error("Wallet connection failed:", err)
-        alert("Wallet connection failed. Check Phantom extension.")
+        alert("Wallet connection failed")
       }
     } else {
-      alert("Phantom wallet not found. Please install it.")
+      alert("Phantom wallet not found, Please install it.")
     }
   }
 
-  
+
   const handleEmailLogin = async (values) => {
     try {
       const res = await fetch("http://127.0.0.1:8000/api/auth/", {
@@ -47,15 +46,18 @@ export default function LoginForm() {
       console.log("Backend response:", data)
 
       if (res.ok) {
-        if (data.access && data.refresh) {
-          localStorage.setItem("token", data.access)
-          localStorage.setItem("refresh", data.refresh)
+        
+        if (data.tokens?.access && data.tokens?.refresh) {
+          localStorage.setItem("token", data.tokens.access)
+          localStorage.setItem("refresh", data.tokens.refresh)
+          console.log("Tokens stored in localStorage")
         } else {
+    
           localStorage.setItem("user", JSON.stringify(data))
         }
-        window.location.href = "/vendors"
+        window.location.href = "/vendors" 
       } else {
-        alert(data.detail || "This email or password is incorrect.")
+        alert(data.detail || "Email or password is incorrect.")
       }
     } catch (err) {
       console.error("Login error:", err)
@@ -98,8 +100,7 @@ export default function LoginForm() {
           <button type="submit" className="login">Login</button>
 
           <h3 className="acc">
-            Don't have an account?
-            <a href="/signup"> Create Account</a>
+            Don't have an account? <a href="/signup">Create Account</a>
           </h3>
         </Form>
       )}

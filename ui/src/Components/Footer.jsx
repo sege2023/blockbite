@@ -1,4 +1,3 @@
-// src/components/FooterNav.jsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaHome, FaHeart, FaShoppingBag, FaUser } from "react-icons/fa";
@@ -9,7 +8,7 @@ const Footer = () => {
 
   const navItems = [
     { path: "/vendors", label: "Home", icon: <FaHome /> },
-    { path: "/favorites", label: "Favorites", icon: <FaHeart /> },
+    { path: "/Favorites", label: "Favorites", icon: <FaHeart /> },
     { path: "/orders", label: "Orders", icon: <FaShoppingBag /> },
     { path: "/profile", label: "Profile", icon: <FaUser /> },
   ];

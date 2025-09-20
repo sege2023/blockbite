@@ -1,38 +1,35 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 
 export default function Header({ onSearch, onFilter }) {
-  const [query, setQuery] = useState("")
-  const [active, setActive] = useState("All")
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState("All");
 
-  const filters = ["All", "Drinks", "Rice", "Swallow"]
+  const filters = ["All", "Drinks", "Rice", "Swallow"];
 
   const handleSearch = (e) => {
-    setQuery(e.target.value)
-    onSearch(e.target.value)
-  }
+    setQuery(e.target.value);
+    onSearch(e.target.value);
+  };
 
   const handleFilter = (filter) => {
-    setActive(filter)
-    onFilter(filter)
-  }
+    setActive(filter);
+    onFilter(filter);
+  };
 
   return (
-    <div className="menu-header">
+    <div className="headerr">
       <input
         type="text"
         placeholder="Search for food"
         value={query}
         onChange={handleSearch}
-        className="menu-header__search"
+        className="search"
       />
-
-    <div className="menu-header__filters">
+      <div className="filters">
         {filters.map((filter) => (
           <button
             key={filter}
-            className={`menu-header__btn ${
-              active === filter ? "active" : ""
-            }`}
+            className={`bbtn ${active === filter ? "active" : ""}`}
             onClick={() => handleFilter(filter)}
           >
             {filter}
@@ -40,5 +37,5 @@ export default function Header({ onSearch, onFilter }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
