@@ -1,108 +1,70 @@
-import React from "react"
-import { Formik, Form, Field, ErrorMessage } from "formik"
-import * as Yup from "yup"
+import React, {useEffect} from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import WalletButton from "../Components/walletConnect";
 
-const loginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is required"),
-  password: Yup.string()
-    .min(6, "Password is not strong enough")
-    .max(20, "Password is too long")
-    .required("Password is required"),
-})
+const Login = () => {
+  const { publicKey, signMessage } = useWallet();
+  useEffect(() => {
+    if (publicKey) {
+      // Wallet just connected → run your login logic
+      handleLogin();
+    }
+  }, [publicKey]);
 
-export default function LoginForm() {
-  
-  const handlePhantomLogin = async () => {
-    if (window.solana && window.solana.isPhantom) {
-      try {
-        const response = await window.solana.connect()
-        const walletAddress = response.publicKey.toString()
+  const handleLogin = async () => {
+    if (!publicKey || !signMessage) {
+      alert("Connect wallet first");
+      return;
+    }
 
-        console.log("Phantom wallet connected:", walletAddress)
+    // 1. Get challenge (nonce) from backend
+    const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/challenge/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wallet_address: publicKey.toBase58() }),
+    });
+    const { nonce } = await challengeRes.json();
 
-        
-        alert("Wallet connected: " + walletAddress)
-        window.location.href = "/vendors"
-      } catch (err) {
-        console.error("Wallet connection failed:", err)
-        alert("Wallet connection failed. Check Phantom extension.")
-      }
+    // 2. Sign challenge
+    const message = new TextEncoder().encode(nonce);
+    const signature = await signMessage(message);
+
+    // 3. Send signed message to backend for verification
+    const res = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        wallet_address: publicKey.toBase58(),
+        signature: Array.from(signature),
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem("token", data.access); // store JWT
+      alert("Login success");
+      window.location.href = "/vendors";
     } else {
-      alert("Phantom wallet not found. Please install it.")
+      alert("Login failed: " + JSON.stringify(data));
     }
-  }
-
-  
-  const handleEmailLogin = async (values) => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      })
-
-      const data = await res.json()
-      console.log("Backend response:", data)
-
-      if (res.ok) {
-        if (data.access && data.refresh) {
-          localStorage.setItem("token", data.access)
-          localStorage.setItem("refresh", data.refresh)
-        } else {
-          localStorage.setItem("user", JSON.stringify(data))
-        }
-        window.location.href = "/vendors"
-      } else {
-        alert(data.detail || "This email or password is incorrect.")
-      }
-    } catch (err) {
-      console.error("Login error:", err)
-      alert("Something went wrong. Try again.")
-    }
-  }
+  };
 
   return (
-    <Formik
-      initialValues={{ email: "", password: "" }}
-      validationSchema={loginSchema}
-      onSubmit={handleEmailLogin}
-    >
-      {() => (
-        <Form>
-          <div>
-            <label htmlFor="email">Email</label><br />
-            <Field name="email" type="email" className="bg-[#33263B] form" />
-            <ErrorMessage name="email" component="div" className="error" />
-          </div>
+   <>
+     <div className="Login">
+      {/* <WalletMultiButton /> */}
+      <WalletButton/>
+    </div>
+    <h3 className="acc text-center font-light text-[13px] ml-[-50px] mt-[10px] mb-[20px]">
+      Don't have an account?
+      <a href="/signup" className="text-[#14F195] cursor-pointer"> Create Account</a>
+    </h3>
+   </>
+  );
+};
+// function handleLogin(walletAddr) {
+//   console.log("Logging in with wallet:", walletAddr);
+//   // Call backend here
+// }
 
-          <div>
-            <label htmlFor="password">Password</label><br />
-            <Field name="password" type="password" className="bg-[#33263B] form" />
-            <ErrorMessage name="password" component="div" className="error" />
-          </div>
-
-          <p className="or">OR</p>
-
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={handlePhantomLogin}
-              className="formm bg-[#33263B]"
-            >
-              💸 Login with Phantom Wallet
-            </button>
-          </div>
-
-          <button type="submit" className="login">Login</button>
-
-          <h3 className="acc">
-            Don't have an account?
-            <a href="/signup"> Create Account</a>
-          </h3>
-        </Form>
-      )}
-    </Formik>
-  )
-}
+export default Login;

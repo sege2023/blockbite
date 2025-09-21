@@ -1,11 +1,18 @@
-import React from 'react'
+import React from "react"
+import { FaShoppingCart, FaUtensils } from "react-icons/fa"
 
-const Nav1 = () => {
+export default function Nav1() {
   return (
-    <div className='container'>
-      <h1>Blockbite</h1>
-    </div>
+    <nav className="navv">
+      <div className="navv__logo">
+        <FaUtensils className="navv__logo-icon" />
+        <span className="navv__logo-text">BlockBite</span>
+      </div>
+
+      <div className="navv__cart">
+        <FaShoppingCart className="cart-icon" />
+        <span className="cart-badge">7</span>
+      </div>
+    </nav>
   )
 }
-
-export default Nav1

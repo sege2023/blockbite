@@ -9,12 +9,17 @@ crate-type = ["cdylib", "lib"]
 name = "onchain"
 
 [features]
+anchor-debug = []
 default = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-idl-build = ["anchor-lang/idl-build"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+custom-heap = []
+custom-panic = []
 
 [dependencies]
 anchor-lang = "0.31.1"
+anchor-spl = "0.31.1"
+spl-token = { version = "4.0.0", features = ["no-entrypoint"] }
