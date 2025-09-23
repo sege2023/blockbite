@@ -11,7 +11,7 @@ export default function Nav1() {
 
       <div className="navv__cart">
         <FaShoppingCart className="cart-icon" />
-        <span className="cart-badge">7</span>
+        <span className="cart-badge">10</span>
       </div>
     </nav>
   )
