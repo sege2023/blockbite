@@ -1,22 +1,39 @@
-FROM python:3.11-slim
+# Build stage
+FROM python:3.11-alpine AS builder
 
 WORKDIR /app
 
-# Copy requirements first
-COPY Backend/requirements.txt .
+# Install build deps for any compiling packages (e.g., psycopg2 if using Postgres)
+RUN apk add --no-cache build-base postgresql-dev gcc musl-dev libffi-dev
+
+# Copy and install requirements
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the Backend folder
+# Copy app code
 COPY Backend/ ./Backend/
 
-# Set working directory to where manage.py is
+# Collect static files (assumes DJANGO_SETTINGS_MODULE is set or default)
 WORKDIR /app/Backend
-
-# Collect static files and migrate
 RUN python manage.py collectstatic --noinput --clear
 
-# Expose port
+# Runtime stage
+FROM python:3.11-alpine
+
+WORKDIR /app/Backend
+
+# Install runtime deps only (if needed, e.g., for Postgres)
+RUN apk add --no-cache libpq
+
+# Copy installed Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy app code and static files from builder
+COPY --from=builder /app/Backend /app/Backend
+
+# Expose port (Render will override with $PORT)
 EXPOSE 8000
 
-# Run the server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Use gunicorn for production; bind to $PORT for Render
+CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-8000}", "your_project.wsgi:application"]
