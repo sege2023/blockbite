@@ -15,6 +15,7 @@ import secrets
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.message import Message
+from datetime import datetime, timezone, timedelta
 
 # Create your views here.
 
@@ -80,12 +81,12 @@ class RegisterView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        tokens = get_tokens_for_user(user)
+#        tokens = get_tokens_for_user(user)
 
         return Response(
             {
                 "user": RegisterSerializer(user).data,
-                "tokens": tokens,
+#                "tokens": tokens,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -98,41 +99,31 @@ class LoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        tokens = get_tokens_for_user(user)
 
-        return Response(
-            {
-                "user": RegisterSerializer(user).data,
-                "tokens": tokens,
-            },
-             status=status.HTTP_200_OK,
-        )
-
-class RequestChallenge(APIView):
-    def post(self, request):
-        email = request.data.get("email")
-        wallet = request.data.get("wallet_address")
-
-        try:
-            user = User.objects.get(email=email, wallet_address=wallet)
-        except User.DoesNotExist:
-            return Response(
-                {
-                    "error": "Invalid credentials"
-                },
-                status=400
-            )
-        
         nonce = secrets.token_hex(16)
+        issued_at = datetime.now(timezone.utc)
+
         user.login_nonce = nonce
-        user.save(update_fields=["login_nonce"])
+        user.nonce_issued_at = issued_at
+        user.save(update_fields=["login_nonce", "nonce_issued_at"])
+
+        message = f"""Blockbite Authentication
+
+Domain: Blockbite.app
+Wallet: {user.wallet_address}
+Nonce: {nonce}
+Issued At: {issued_at.isoformat()}
+Purpose: Sign this message to verify wallet ownership and continue login.
+"""
 
         return Response(
             {
-                "nonce": nonce
-            }
+                "nonce": nonce,
+                "message": message
+            },
+            status=status.HTTP_200_OK,
         )
-    
+
 
 class VerifyLoginView(APIView):
     def post(self, request):
@@ -142,15 +133,15 @@ class VerifyLoginView(APIView):
         nonce = request.data.get("nonce")
 
         try:
-            user = User.objects.get(email=email, wallet_address=wallet,)
+            user = User.objects.get(email=email, wallet_address=wallet)
         except User.DoesNotExist:
             return Response(
                 {
                     "error": "invalid credentials"
                 },
-                status=400
+                status=400    
             )
-        
+
         if user.login_nonce != nonce:
             return Response(
                 {
@@ -158,23 +149,48 @@ class VerifyLoginView(APIView):
                 },
                 status=400
             )
-        
-        #verify
-        message = nonce.encode("utf-8")
-        sig = Signature.from_string(signature)
-        pubkey = Pubkey.from_string(wallet)
 
-        if not pubkey.verify(message, sig):
+        if user.nonce_issued_at:
+            if datetime.now(timezone.utc) - user.nonce_issued_at > timedelta(minutes=5):
+                return Response(
+                    {
+                        "error": "nonce expired"
+                    },
+                    status=400
+                )
+
+        issued_at_str = user.nonce_issued_at.isoformat()
+        message = f"""Blockbite Authentication
+
+Domain: Blockbite.app
+Wallet: {wallet}
+Nonce: {nonce}
+Issued At: {issued_at_str}
+Purpose: Sign this message to verify wallet ownership and continue login.
+"""
+
+        try:
+            sig = Signature.from_string(signature)
+            pubkey = Pubkey.from_string(wallet)
+            if not pubkey.verify(message.encode("utf-8"), sig):
+                return Response(
+                    {
+                        "error": "signature invalid"
+                    },
+                    status=400
+                )
+        except Exception as e:
             return Response(
                 {
-                    "error": "signature invalid"
+                    "error": f"verification failed: {str(e)}"
                 },
                 status=400
             )
-        
-        #success
+
+        # success
         user.login_nonce = None
-        user.save(update_fields=["login_nonce"])
+        user.nonce_issued_at = None
+        user.save(update_fields=["login_nonce", "nonce_issued_at"])
 
         tokens = get_tokens_for_user(user)
         return Response(
@@ -183,7 +199,3 @@ class VerifyLoginView(APIView):
                 "tokens": tokens
             }
         )
-#class UserListApiView(generics.ListAPIView):
-#    queryset = User.objects.all()
-#    serializer_class = UserSerializer
-#    permission_classes = [IsAdminUser]
