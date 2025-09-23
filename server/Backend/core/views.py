@@ -11,6 +11,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .filters import ProductFilter, InStockFilterBackend
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+import secrets
+from solders.pubkey import Pubkey
+from solders.signature import Signature
+from solders.message import Message
 
 # Create your views here.
 
@@ -104,7 +108,81 @@ class LoginView(APIView):
              status=status.HTTP_200_OK,
         )
 
+class RequestChallenge(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        wallet = request.data.get("wallet_address")
 
+        try:
+            user = User.objects.get(email=email, wallet_address=wallet)
+        except User.DoesNotExist:
+            return Response(
+                {
+                    "error": "Invalid credentials"
+                },
+                status=400
+            )
+        
+        nonce = secrets.token_hex(16)
+        user.login_nonce = nonce
+        user.save(update_fields=["login_nonce"])
+
+        return Response(
+            {
+                "nonce": nonce
+            }
+        )
+    
+
+class VerifyLoginView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        wallet = request.data.get("wallet_address")
+        signature = request.data.get("signature")
+        nonce = request.data.get("nonce")
+
+        try:
+            user = User.objects.get(email=email, wallet_address=wallet,)
+        except User.DoesNotExist:
+            return Response(
+                {
+                    "error": "invalid credentials"
+                },
+                status=400
+            )
+        
+        if user.login_nonce != nonce:
+            return Response(
+                {
+                    "error": "invalid nonce"
+                },
+                status=400
+            )
+        
+        #verify
+        message = nonce.encode("utf-8")
+        sig = Signature.from_string(signature)
+        pubkey = Pubkey.from_string(wallet)
+
+        if not pubkey.verify(message, sig):
+            return Response(
+                {
+                    "error": "signature invalid"
+                },
+                status=400
+            )
+        
+        #success
+        user.login_nonce = None
+        user.save(update_fields=["login_nonce"])
+
+        tokens = get_tokens_for_user(user)
+        return Response(
+            {
+                "user": RegisterSerializer(user).data,
+                "tokens": tokens
+            }
+        )
 #class UserListApiView(generics.ListAPIView):
 #    queryset = User.objects.all()
 #    serializer_class = UserSerializer
