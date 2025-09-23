@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const MenuPage = ({ searchQuery, activeFilter }) => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -11,11 +12,12 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login first.");
-        navigate("/login");
-        return;
-      }
+
+      // if (!token) {
+      //   alert("Please login first.");
+      //   navigate("/");
+      //   return;
+      // }
 
       try {
         const res = await fetch("http://127.0.0.1:8000/products/", {
@@ -25,23 +27,54 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
           },
         });
 
-        if (res.status === 401) {
-          alert("Session expired. Please login again.");
-          localStorage.removeItem("token");
-          localStorage.removeItem("refresh");
-          navigate("/login");
-          return;
-        }
+        // if (res.status === 401) {
+        //   alert("Session expired. Please login again.");
+        //   localStorage.removeItem("token");
+        //   localStorage.removeItem("refresh");
+        //   navigate("/");
+        //   return;
+        // }
 
         if (!res.ok) {
           throw new Error(`Failed to fetch products. Status: ${res.status}`);
         }
 
         const data = await res.json();
+        console.log("API Data:", data);
         setProducts(data);
         setFilteredProducts(data);
       } catch (err) {
-        setError(err.message);
+        // ===== MOCK DATA FOR TESTING =====
+        const mockData = [
+          {
+            name: "Jollof Rice",
+            description: "Spicy rice",
+            price: 20,
+            stock: 5,
+            category: "Rice",
+          },
+          {
+            name: "Semo",
+            description: "Hot semo and soup",
+            price: 25,
+            stock: 2,
+            category: "Swallow",
+          },
+          {
+            name: "Coke",
+            description: "Chilled soft drink",
+            price: 8,
+            stock: 10,
+            category: "Drinks",
+          },
+        ];
+        console.log("Mock Data:", mockData);
+        setProducts(mockData);
+        setFilteredProducts(mockData);
+        setError(null);
+        
+
+        console.error(err.message);
       } finally {
         setLoading(false);
       }
@@ -59,7 +92,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
 
     if (searchQuery) {
       temp = temp.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (p.name || "").toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -71,43 +104,29 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   if (filteredProducts.length === 0) return <p>No products found.</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "20px" }}>Menu</h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-          gap: "20px",
-        }}
-      >
+    <div>
+      <h2 style={{ padding: "1rem" }}>Menu</h2>
+      <div className="menu-grid">
         {filteredProducts.map((product, index) => (
-          <div
-            key={index}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "15px",
-              backgroundColor: "#fafafa",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-            }}
-          >
-            <h3 style={{ marginBottom: "10px" }}>{product.name}</h3>
-            <p style={{ fontSize: "14px", color: "#555" }}>
-              {product.description}
-            </p>
-            <p style={{ fontWeight: "bold", margin: "10px 0" }}>
-              Price: ₦{product.price}
-            </p>
-            <p
-              style={{
-                fontSize: "14px",
-                color: product.stock > 0 ? "green" : "red",
-              }}
-            >
-              {product.stock > 0
-                ? `In Stock: ${product.stock}`
-                : "Out of Stock"}
-            </p>
+          <div key={index} className="iitem">
+            <div className="imager">
+              <img
+                src="https://via.placeholder.com/150"
+                alt={product.name}
+              />
+              <button className="fav-btn">♥</button>
+            </div>
+            <div className="iitem__details">
+              <h3>{product.name}</h3>
+              <p className="desc">{product.description}</p>
+              <p className="price">${product.price}</p>
+              <p className="stock">
+                {product.stock > 0
+                  ? `In Stock: ${product.stock}`
+                  : "Out of Stock"}
+              </p>
+              <button className="add-btn">Add</button>
+            </div>
           </div>
         ))}
       </div>
