@@ -5,7 +5,7 @@ import SignUpForm from '../Forms/signUpForm.jsx'
 
 const Signup = () => {
   return (
-    <div>
+    <div className='card'>
       <Log/>
       <SignUpForm/>
     </div>
