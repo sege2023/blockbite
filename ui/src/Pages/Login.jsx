@@ -1,5 +1,5 @@
 import React from 'react'
-import Nav from '../Components/nav.jsx'
+import Nav from '../Components/Nav.jsx'
 import LoginForm from '../Forms/loginForm.jsx'
 import '../Styles/Login.scss'
 

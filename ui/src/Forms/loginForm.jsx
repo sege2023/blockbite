@@ -1,17 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WalletButton from "../Components/walletConnect";
 
 const Login = () => {
   const { publicKey, signMessage } = useWallet();
 
-  useEffect(() => {
-    if (publicKey) {
-      handleLogin();
-    }
-  }, [publicKey]);
-
-  const handleLogin = async () => {
+  // login handler wrapped in useCallback so it's stable and can go into dependencies
+  const handleLogin = useCallback(async () => {
     if (!publicKey || !signMessage) {
       alert("Connect wallet first");
       return;
@@ -51,11 +46,19 @@ const Login = () => {
         throw new Error("Login failed: " + JSON.stringify(data));
       }
     } catch (err) {
+      // fallback for dev/testing
       console.warn("Backend not ready, using dev-token. Error:", err.message);
       localStorage.setItem("token", "dev-token");
       window.location.href = "/vendors";
-    } 
-  };
+    }
+  }, [publicKey, signMessage]); // depend on wallet props
+
+  // when wallet connects, trigger login
+  useEffect(() => {
+    if (publicKey) {
+      handleLogin();
+    }
+  }, [publicKey, handleLogin]);
 
   return (
     <>
