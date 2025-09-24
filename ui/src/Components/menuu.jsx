@@ -44,7 +44,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         setProducts(data);
         setFilteredProducts(data);
       } catch (err) {
-        // ===== MOCK DATA FOR TESTING =====
+        
         const mockData = [
           {
             name: "Jollof Rice",
