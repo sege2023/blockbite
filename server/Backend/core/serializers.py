@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Product, Order, OrderItem, User
 from django.contrib.auth import authenticate
+from .utils import upload_to_r2
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -49,6 +50,11 @@ class ProductSerializer(serializers.ModelSerializer):
             'stock',
             'image',
         )
+
+    def get_image_url(self, obj):
+        """Return the correct image URL for frontend"""
+        return obj.get_image_url
+    
 
     def create(self, validated_data):
         # Check if there's an image and if we want to use R2
