@@ -46,6 +46,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=False)
     name = models.CharField(max_length=253, blank=True, null=True)
     wallet_address = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    login_nonce = models.CharField(max_length=255, blank=True, null=True)
+    nonce_issued_at =  models.DateTimeField(blank=True, null=True)
 
     is_staff = models.BooleanField(
         gettext_lazy('Staff Status'), default=False,

@@ -11,6 +11,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .filters import ProductFilter, InStockFilterBackend
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+import secrets
+from solders.pubkey import Pubkey
+from solders.signature import Signature
+from solders.message import Message
+from datetime import datetime, timezone, timedelta
 
 # Create your views here.
 
@@ -76,12 +81,12 @@ class RegisterView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        tokens = get_tokens_for_user(user)
+#        tokens = get_tokens_for_user(user)
 
         return Response(
             {
                 "user": RegisterSerializer(user).data,
-                "tokens": tokens,
+#                "tokens": tokens,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -94,18 +99,103 @@ class LoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        tokens = get_tokens_for_user(user)
+
+        nonce = secrets.token_hex(16)
+        issued_at = datetime.now(timezone.utc)
+
+        user.login_nonce = nonce
+        user.nonce_issued_at = issued_at
+        user.save(update_fields=["login_nonce", "nonce_issued_at"])
+
+        message = f"""Blockbite Authentication
+
+Domain: Blockbite.app
+Wallet: {user.wallet_address}
+Nonce: {nonce}
+Issued At: {issued_at.isoformat()}
+Purpose: Sign this message to verify wallet ownership and continue login.
+"""
 
         return Response(
             {
-                "user": RegisterSerializer(user).data,
-                "tokens": tokens,
+                "nonce": nonce,
+                "message": message
             },
-             status=status.HTTP_200_OK,
+            status=status.HTTP_200_OK,
         )
 
 
-#class UserListApiView(generics.ListAPIView):
-#    queryset = User.objects.all()
-#    serializer_class = UserSerializer
-#    permission_classes = [IsAdminUser]
+class VerifyLoginView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        wallet = request.data.get("wallet_address")
+        signature = request.data.get("signature")
+        nonce = request.data.get("nonce")
+
+        try:
+            user = User.objects.get(email=email, wallet_address=wallet)
+        except User.DoesNotExist:
+            return Response(
+                {
+                    "error": "invalid credentials"
+                },
+                status=400    
+            )
+
+        if user.login_nonce != nonce:
+            return Response(
+                {
+                    "error": "invalid nonce"
+                },
+                status=400
+            )
+
+        if user.nonce_issued_at:
+            if datetime.now(timezone.utc) - user.nonce_issued_at > timedelta(minutes=5):
+                return Response(
+                    {
+                        "error": "nonce expired"
+                    },
+                    status=400
+                )
+
+        issued_at_str = user.nonce_issued_at.isoformat()
+        message = f"""Blockbite Authentication
+
+Domain: Blockbite.app
+Wallet: {wallet}
+Nonce: {nonce}
+Issued At: {issued_at_str}
+Purpose: Sign this message to verify wallet ownership and continue login.
+"""
+
+        try:
+            sig = Signature.from_string(signature)
+            pubkey = Pubkey.from_string(wallet)
+            if not pubkey.verify(message.encode("utf-8"), sig):
+                return Response(
+                    {
+                        "error": "signature invalid"
+                    },
+                    status=400
+                )
+        except Exception as e:
+            return Response(
+                {
+                    "error": f"verification failed: {str(e)}"
+                },
+                status=400
+            )
+
+        # success
+        user.login_nonce = None
+        user.nonce_issued_at = None
+        user.save(update_fields=["login_nonce", "nonce_issued_at"])
+
+        tokens = get_tokens_for_user(user)
+        return Response(
+            {
+                "user": RegisterSerializer(user).data,
+                "tokens": tokens
+            }
+        )
