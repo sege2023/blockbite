@@ -49,6 +49,29 @@ class ProductSerializer(serializers.ModelSerializer):
             'image',
         )
 
+    def create(self, validated_data):
+        # Check if there's an image and if we want to use R2
+        image_file = validated_data.get('image')
+        
+        # Simple toggle - you can make this smarter later
+        USE_R2 = True  # Set to False to use local storage
+        
+        if image_file and USE_R2:
+            # Upload to R2 instead of local storage
+            r2_url = upload_to_r2(image_file)
+            if r2_url:
+                # Remove the image from validated_data so it doesn't save locally
+                validated_data.pop('image')
+                # Create the product
+                product = Product.objects.create(**validated_data)
+                # You could store the R2 URL in a custom field, or just return it
+                # For now, we'll just print it
+                print(f"Image uploaded to R2: {r2_url}")
+                return product
+        
+        # Fallback to normal creation (local storage)
+        return super().create(validated_data)
+
     def validate_price(self, value):
         if value <= 0:
             raise serializers.ValidationError(
