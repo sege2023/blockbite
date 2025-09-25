@@ -74,10 +74,22 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to="Products", blank=True, null=True)
+    image_r2_url = models.URLField(blank=True, null=True)  # R2 image URL
+    image_r2_key = models.CharField(max_length=500, blank=True, null=True)  # For deletion later
+
 
     @property
     def in_stock(self):
         return self.stock > 0
+    
+    @property
+    def get_image_url(self):
+        """Return R2 URL if available, otherwise local image URL"""
+        if self.image_r2_url:
+            return self.image_r2_url
+        elif self.image:
+            return self.image.url
+        return None
 
     def __str__(self):
         return self.name

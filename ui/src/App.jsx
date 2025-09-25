@@ -1,10 +1,11 @@
 
 // import React from 'react'
 // import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from './Pages/login.jsx'
+import Login from './Pages/Login.jsx'
 import Signup from './Pages/Signup.jsx'
 import Vendors from './Pages/Vendors.jsx'
 import Favourite from './Pages/Favourite.jsx'
+import Dashboard from './Pages/Dashboard.jsx' 
 import ProtectedRoute from "./Components/ProtectedRoute.jsx"
 // import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 // import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -86,6 +87,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Favourite />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
                   </ProtectedRoute>
                 }
               />

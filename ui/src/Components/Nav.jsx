@@ -19,8 +19,8 @@ const Nav = () => {
   }, []);
 
   return (
-    <div className="body text-center">
-      <img src={logo} alt="logo" className="mx-auto" />
+    <div className="body text-center block">
+      <img src={logo} alt="logo" className="mx-auto " />
       <h1 className="text-white text-3xl font-bold mt-4 inline-block type">
         {displayedText}
         <span className="cursor"></span>

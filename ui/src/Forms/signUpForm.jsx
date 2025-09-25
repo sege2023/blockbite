@@ -72,7 +72,7 @@ export default function SignUpForm() {
 
           <div className="mt-4">
             {/* <WalletMultiButton /> */}
-            <WalletButton className="!w-full !max-w-sm"/>
+            <WalletButton className="!w-full !signn !max-w-sm"/>
             {walletAddress && <p>Connected: {walletAddress.slice(0, 6)}...</p>}
           </div>
 

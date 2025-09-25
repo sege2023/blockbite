@@ -7,7 +7,7 @@
   animation: blink 0.8s step-end infinite;
 }
 .type{
-    margin-top: -20px;
+    margin-top: 20px;
 }
 
 @keyframes blink {
@@ -16,4 +16,50 @@
   }
 }
 
+.buttt{
+  margin-top: 10%;
+  margin-bottom: 3%;
+}
 
+@media(min-width:768px){
+  .block{
+    img{
+      margin-left: 10%;
+    }
+    .type{
+      margin-top: 3%;
+    }
+   
+  }
+  .buttt{
+    margin-top: 5%;
+    margin-bottom: 3%;
+  }
+}
+
+@media(min-width:1024px){
+  .block{
+    img{
+      margin-left: 18.3%;
+    }
+    .type{
+      font-size: 45px;
+    }
+  }
+  
+  .acc{
+    font-size: 25px;
+  }
+}
+
+@media(min-width:1440px){
+  .block{
+    img{
+      margin-left: 28%;
+    }
+    .type{
+      font-size: 50px;
+    }
+  }
+  
+}
