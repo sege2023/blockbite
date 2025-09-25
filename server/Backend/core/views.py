@@ -177,7 +177,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
         try:
             sig = Signature.from_string(signature)
             pubkey = Pubkey.from_string(wallet)
-            if not pubkey.verify(message.encode("utf-8"), sig):
+            if not sig.verify(message.encode("utf-8"), pubkey):
                 return Response(
                     {
                         "error": "signature invalid"
