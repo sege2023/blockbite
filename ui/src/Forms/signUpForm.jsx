@@ -4,7 +4,8 @@ import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import WalletButton from "../Components/walletConnect";
+import WalletButton from "../Components/walletConnect"
+
 
 const signUpSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
@@ -47,7 +48,7 @@ export default function SignUpForm() {
       if (res.ok) {
         alert("Account created successfully");
         resetForm();
-        navigate("/"); 
+        navigate("/Login");
       } else {
         alert("Signup failed: " + (data.detail || JSON.stringify(data)));
       }
