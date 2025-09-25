@@ -19,18 +19,18 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+#    email = serializers.EmailField(required=True)
     wallet_address = serializers.CharField(required=True)
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        wallet = attrs.get("wallet_address")
+ #       email = attrs.get("email")
+        wallet = attrs.get("wallet_address").lower()
 
         try:
-            user = User.objects.get(email=email, wallet_address=wallet)
+            user = User.objects.get(wallet_address__iexact=wallet)
         except User.DoesNotExist:
                 raise serializers.ValidationError(
-                    "invalid email or wallet address"
+                    "invalid wallet address"
                     )
         if not user.is_active:
             raise serializers.ValidationError("User account is disabled.")
@@ -92,3 +92,47 @@ class OrderSerializer(serializers.ModelSerializer):
             'items',
             'total_price'
         )
+
+class OrderItemCreateSerializer(serializers.ModelSerializer):
+    product = serializers.SlugRelatedField(
+        queryset=Product.objects.all(),
+        slug_field="name"  
+    )
+    class Meta:
+        model = OrderItem
+        fields = (
+            'product',
+            'quantity'
+        )
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    items = OrderItemCreateSerializer(many=True)
+    total_price = serializers.SerializerMethodField()
+
+    def get_total_price(self, obj):
+        order_items = obj.items.all()
+        return sum(order_item.item_subtotal for order_item in order_items)
+
+    class Meta:
+        model = Order
+        fields = (
+            'order_id',
+            'created_at',
+            'status',
+            'items',
+            'total_price'
+        )
+        read_only_fields = (
+            'order_id',
+            'created_at',
+            'status'
+        )
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        user = self.context['request'].user
+        order = Order.objects.create(user=user, **validated_data)
+
+        for item_data in items_data:
+            OrderItem.objects.create(order=order, **item_data)
+        return order
