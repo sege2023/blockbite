@@ -120,7 +120,7 @@ class OrderItem(models.Model):
         on_delete=models.CASCADE,
         related_name= "items"
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")
     quantity = models.PositiveIntegerField()
 
     @property
