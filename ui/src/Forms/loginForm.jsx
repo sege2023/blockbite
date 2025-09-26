@@ -56,10 +56,12 @@ const Login = () => {
       } else {
         console.error("Verify error:", data);
         alert("Login failed: " + JSON.stringify(data));
+        window.location.href = "/vendors"; 
       }
     } catch (err) {
       console.error("Login failed:", err.message);
       alert("Login failed. Try again.");
+      
     } finally {
       setLoading(false);
     }
