@@ -1,10 +1,61 @@
+# # Build stage
+# FROM python:3.11-alpine AS builder
+
+# WORKDIR /app
+
+# # Install build deps for any compiling packages (e.g., psycopg2 if using Postgres)
+# RUN apk add --no-cache build-base postgresql-dev gcc musl-dev libffi-dev
+
+# # Copy and install requirements
+# COPY requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# # Copy app code
+# COPY Backend/ ./Backend/
+
+# # Collect static files (assumes DJANGO_SETTINGS_MODULE is set or default)
+# WORKDIR /app/Backend
+# ENV DJANGO_SETTINGS_MODULE=Backend.settings
+# RUN python manage.py collectstatic --noinput --clear
+
+# # Runtime stage
+# FROM python:3.11-alpine
+
+# WORKDIR /app/Backend
+
+# # Install runtime deps only (if needed, e.g., for Postgres)
+# RUN apk add --no-cache libpq
+
+# # Copy installed Python packages from builder
+# COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+# COPY --from=builder /usr/local/bin /usr/local/bin
+
+# # Copy app code and static files from builder
+# COPY --from=builder /app/Backend /app/Backend
+
+# # Expose port (Render will override with $PORT)
+# EXPOSE 8000
+
+# # Use gunicorn for production; bind to $PORT for Render
+# # CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-8000}", "Backend.wsgi:application"]
+# CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 Backend.wsgi:application"]
+
+
+
 # Build stage
 FROM python:3.11-alpine AS builder
 
 WORKDIR /app
 
-# Install build deps for any compiling packages (e.g., psycopg2 if using Postgres)
-RUN apk add --no-cache build-base postgresql-dev gcc musl-dev libffi-dev
+# Install build dependencies
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    jpeg-dev \
+    zlib-dev
 
 # Copy and install requirements
 COPY requirements.txt .
@@ -13,29 +64,36 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app code
 COPY Backend/ ./Backend/
 
-# Collect static files (assumes DJANGO_SETTINGS_MODULE is set or default)
-WORKDIR /app/Backend
-ENV DJANGO_SETTINGS_MODULE=Backend.settings
-RUN python manage.py collectstatic --noinput --clear
-
 # Runtime stage
 FROM python:3.11-alpine
 
 WORKDIR /app/Backend
 
-# Install runtime deps only (if needed, e.g., for Postgres)
-RUN apk add --no-cache libpq
+# Install runtime dependencies
+RUN apk add --no-cache \
+    libpq \
+    jpeg \
+    zlib
 
 # Copy installed Python packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy app code and static files from builder
+# Copy app code from builder
 COPY --from=builder /app/Backend /app/Backend
 
-# Expose port (Render will override with $PORT)
+# Create a non-root user
+RUN addgroup -g 1000 -S appgroup && \
+    adduser -u 1000 -S appuser -G appgroup
+
+# Change ownership of the app directory
+RUN chown -R appuser:appgroup /app/Backend
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8000
 
-# Use gunicorn for production; bind to $PORT for Render
-# CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-8000}", "Backend.wsgi:application"]
-CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 Backend.wsgi:application"]
+# Start script that handles migrations, static files, and superuser creation
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput --clear && python create_superuser.py && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 Backend.wsgi:application"]
