@@ -189,11 +189,18 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
 
-AWS_ACCESS_KEY_ID = env('R2_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('R2_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = env('R2_BUCKET_NAME')
-AWS_S3_ENDPOINT_URL = f'https://{os.getenv("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com'
-# AWS_S3_ENDPOINT_URL = env('ENDPOINT_URL')
+# AWS_ACCESS_KEY_ID = env('R2_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = env('R2_SECRET_ACCESS_KEY')
+# AWS_STORAGE_BUCKET_NAME = env('R2_BUCKET_NAME')
+# AWS_S3_ENDPOINT_URL = f'https://{os.getenv("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com'
+# # AWS_S3_ENDPOINT_URL = env('ENDPOINT_URL')
+# AWS_S3_REGION_NAME = 'auto'
+
+# modified for docker and render deployment
+AWS_ACCESS_KEY_ID = env.str('R2_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = env.str('R2_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = env.str('R2_BUCKET_NAME', default='')
+AWS_S3_ENDPOINT_URL = f'https://{env.str("R2_ACCOUNT_ID", default="")}.r2.cloudflarestorage.com' if env.str("R2_ACCOUNT_ID", default="") else ''
 AWS_S3_REGION_NAME = 'auto'
 
 # Production settings
