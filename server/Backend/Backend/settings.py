@@ -15,7 +15,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import environ
 import os
-
+from urllib.parse import urlparse
 env = environ.Env(
     DEBUG=(bool, False)
 )
@@ -91,17 +91,29 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-#    'default': {
-#       'NAME': env('DB_NAME'),
-#       'USER': env('DB_USER'),
-#      'PASSWORD': env('DB_PASSWORD'),
-#      'HOST': env('DB_HOST'),
-#      'PORT': env('DB_PORT'),
+# DATABASES = {
+# #    'default': {
+# #       'NAME': env('DB_NAME'),
+# #       'USER': env('DB_USER'),
+# #      'PASSWORD': env('DB_PASSWORD'),
+# #      'HOST': env('DB_HOST'),
+# #      'PORT': env('DB_PORT'),
 
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+url = urlparse(os.environ.get("DATABASE_URL", "postgresql://user:pass@localhost:5432/dbname"))
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": url.path[1:],
+        "USER": url.username,
+        "PASSWORD": url.password,
+        "HOST": url.hostname,
+        "PORT": url.port,
     }
 }
 
@@ -182,3 +194,8 @@ AWS_STORAGE_BUCKET_NAME = env('R2_BUCKET_NAME')
 AWS_S3_ENDPOINT_URL = f'https://{os.getenv("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com'
 # AWS_S3_ENDPOINT_URL = env('ENDPOINT_URL')
 AWS_S3_REGION_NAME = 'auto'
+
+# Production settings
+# DEBUG = os.environ.get("DEBUG") == "True"
+DEBUG = os.environ.get("DEBUG")
+SECRET_KEY = os.environ.get("SECRET_KEY")
