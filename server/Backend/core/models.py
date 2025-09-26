@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.translation import gettext_lazy
 import uuid
+from .utils import upload_to_r2
 
 
 class CustomUserManager(BaseUserManager):
@@ -90,6 +91,51 @@ class Product(models.Model):
         elif self.image:
             return self.image.url
         return None
+    
+    # def save(self, *args, **kwargs):
+    #     USE_R2 = True  # Toggle this
+        
+    #     if self.image and USE_R2 and not self.image_r2_url:
+    #         try:
+    #             print("Attempting R2 upload...")
+
+    #             # self.image.file.seek(0)
+    #             file_obj = self.image.file
+    #             file_obj.seek(0)
+                
+    #             r2_result = upload_to_r2(file_obj)
+    #             if r2_result:
+    #                 self.image_r2_url = r2_result
+    #                 self.image_r2_key = r2_result.split('/')[-1]
+    #                 print(f"SUCCESS: R2 upload: {r2_result}")
+    #                 # self.image.file.seek(0)
+    #                 self.image = None  # Clear local image to avoid saving
+    #             else:
+    #                 print("FAILED: R2 upload returned None")
+    #         except Exception as e:
+    #             print(f"ERROR: R2 upload failed: {e}")
+    #             # self.image.file.seek(0)
+        
+    #     super().save(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        USE_R2 = True
+        
+        if self.image and USE_R2 and not self.image_r2_url:
+            try:
+                print("Attempting R2 upload...")
+                # Pass the Django image file directly
+                r2_result = upload_to_r2(self.image)
+                if r2_result:
+                    self.image_r2_url = r2_result
+                    self.image_r2_key = r2_result.split('/')[-1]
+                    print(f"SUCCESS: R2 upload: {r2_result}")
+                    # Clear local image to prevent double save
+                    self.image = None
+            except Exception as e:
+                print(f"ERROR: R2 upload failed: {e}")
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

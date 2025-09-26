@@ -63,7 +63,7 @@ class ProductSerializer(serializers.ModelSerializer):
         # Simple toggle - you can make this smarter later
         USE_R2 = True  # Set to False to use local storage
         
-        if image_file and USE_R2:
+        if image_file and USE_R2 == True:
             # Upload to R2 instead of local storage
             r2_url = upload_to_r2(image_file)
             if r2_url:

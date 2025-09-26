@@ -15,8 +15,22 @@ def upload_to_r2(file, folder="products"):
         )
         
         # Generate unique filename
-        file_extension = file.name.split('.')[-1]
+        # file_extension = file.name.split('.')[-1]
+        # file_name = f"{folder}/{uuid.uuid4()}.{file_extension}"
+
+        if hasattr(file, 'name'):
+            # Django file object
+            file_extension = file.name.split('.')[-1]
+            content_type = getattr(file, 'content_type', 'image/jpeg')
+        else:
+            # Raw file handle - use defaults
+            file_extension = 'jpg'
+            content_type = 'image/jpeg'
+        
         file_name = f"{folder}/{uuid.uuid4()}.{file_extension}"
+        
+        # Make sure we're at the beginning
+        file.seek(0)
         
         # Upload file
         s3.upload_fileobj(
@@ -24,13 +38,13 @@ def upload_to_r2(file, folder="products"):
             settings.AWS_STORAGE_BUCKET_NAME,
             file_name,
             ExtraArgs={
-                'ContentType': file.content_type,
+                'ContentType': content_type,
                 'ACL': 'public-read'  # Make file publicly accessible
             }
         )
         
         # Return public URL
-        return f"https://pub-{settings.R2_ACCOUNT_ID}.r2.dev/{file_name}"
+        return f"https://pub-{settings.AWS_ACCESS_KEY_ID}.r2.dev/{file_name}"
         
     except ClientError as e:
         print(f"Error uploading to R2: {e}")
