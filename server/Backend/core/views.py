@@ -137,6 +137,14 @@ class VerifyLoginView(APIView):
         signature = request.data.get("signature")
         nonce = request.data.get("nonce")
 
+        if isinstance(wallet, (bytes, bytearray)):
+            wallet = wallet.decode()
+        if isinstance(signature, (bytes, bytearray)):
+            signature = signature.decode()
+
+        print("wallet type:", type(wallet), "->", wallet[:10])
+        print("signature type:", type(signature), "->", signature[:10])
+
         try:
             user = User.objects.get(wallet_address=wallet)
         except User.DoesNotExist:
