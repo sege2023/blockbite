@@ -56,7 +56,9 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import '@solana/wallet-adapter-react-ui/styles.css'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-// import Home from './pages/home';
+import Cart from "../src/Pages/Cart.jsx"
+
+
 
 function App() {
   const wallets = [new PhantomWalletAdapter()]
@@ -99,6 +101,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <Cart/>
+                  </ProtectedRoute>
+                }
+              />  
 
             </Routes>
           </BrowserRouter>

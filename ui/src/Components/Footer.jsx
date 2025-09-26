@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaHeart, FaShoppingBag, FaCreditCard } from "react-icons/fa";
+import { FaHome, FaHeart, FaShoppingCart, FaCreditCard } from "react-icons/fa";
 
 const Footer = () => {
   const location = useLocation();
@@ -8,7 +8,7 @@ const Footer = () => {
   const navItems = [
     { path: "/vendors", label: "Home", icon: <FaHome /> },
     { path: "/dashboard", label: "Favorites", icon: <FaHeart /> },
-    { path: "/orders", label: "Orders", icon: <FaShoppingBag /> },
+    { path: "/cart", label: "Cart", icon: <FaShoppingCart /> },
     { path: "/checkout", label: "Checkout", icon: <FaCreditCard /> },
   ];
 
