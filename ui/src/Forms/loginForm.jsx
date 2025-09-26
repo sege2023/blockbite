@@ -1,39 +1,50 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WalletButton from "../Components/walletConnect";
+import bs58 from "bs58";
 
 const Login = () => {
   const { publicKey, signMessage } = useWallet();
+  const [loading, setLoading] = useState(false);
 
-  // login handler wrapped in useCallback so it's stable and can go into dependencies
   const handleLogin = useCallback(async () => {
     if (!publicKey || !signMessage) {
       alert("Connect wallet first");
       return;
     }
 
+    setLoading(true);
     try {
       // 1. Get challenge (nonce) from backend
-      const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/challenge/", {
+      const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet_address: publicKey.toBase58() }),
+        body: JSON.stringify({
+          wallet_address: publicKey.toBase58(),
+        }),
       });
 
-      if (!challengeRes.ok) throw new Error("Challenge API failed");
+      if (!challengeRes.ok) {
+        const errText = await challengeRes.text();
+        console.error("Challenge API error:", challengeRes.status, errText);
+        alert("Challenge API failed: " + errText);
+        return;
+      }
+
       const { nonce } = await challengeRes.json();
 
       // 2. Sign challenge
       const message = new TextEncoder().encode(nonce);
       const signature = await signMessage(message);
 
-      // 3. Send signed message to backend for verification
-      const res = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+      // 3. Verify signature with backend
+      const res = await fetch("http://127.0.0.1:8000/api/user/verify-login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           wallet_address: publicKey.toBase58(),
-          signature: Array.from(signature),
+          signature: bs58.encode(signature),
+          nonce: nonce,
         }),
       });
 
@@ -43,17 +54,19 @@ const Login = () => {
         alert("Login success");
         window.location.href = "/vendors";
       } else {
-        throw new Error("Login failed: " + JSON.stringify(data));
+        console.error("Verify error:", data);
+        alert("Login failed: " + JSON.stringify(data));
+        window.location.href = "/vendors"; 
       }
     } catch (err) {
-      // fallback for dev/testing
-      console.warn("Backend not ready, using dev-token. Error:", err.message);
-      localStorage.setItem("token", "dev-token");
-      window.location.href = "/vendors";
+      console.error("Login failed:", err.message);
+      alert("Login failed. Try again.");
+      
+    } finally {
+      setLoading(false);
     }
-  }, [publicKey, signMessage]); // depend on wallet props
+  }, [publicKey, signMessage]);
 
-  // when wallet connects, trigger login
   useEffect(() => {
     if (publicKey) {
       handleLogin();
@@ -65,10 +78,17 @@ const Login = () => {
       <div className="Login">
         <WalletButton />
       </div>
-      <h3 className="acc text-center font-light text-[13px] ml-[-50px] mt-[10px] mb-[20px]">
+
+      {loading && (
+        <p className="text-center text-sm mt-2 text-gray-400">
+          Authenticating...
+        </p>
+      )}
+
+      <h3 className="acc text-center font-light text-[13px] mt-[10px] mb-[20px]">
         Don't have an account?
-        <a href="/signup" className="text-[#14F195] cursor-pointer">
-          {" "}Create Account
+        <a href="/signup" className="text-[#14F195] cursor-pointer ml-1">
+          Create Account
         </a>
       </h3>
     </>

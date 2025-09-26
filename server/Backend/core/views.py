@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import Product, Order, OrderItem, User
-from .serializers import ProductSerializer, OrderSerializer, RegisterSerializer, LoginSerializer
+from .serializers import ProductSerializer, OrderSerializer, RegisterSerializer, LoginSerializer, OrderCreateSerializer
 from rest_framework.viewsets import generics
 from rest_framework.views import APIView
 from rest_framework import status
@@ -54,6 +54,11 @@ class OrderListApiView(generics.ListAPIView):
     queryset = Order.objects.prefetch_related('items__product')
     serializer_class = OrderSerializer
     permission_classes = [IsAdminUser]
+
+class OrderCreateApiView(generics.CreateAPIView):
+#    queryset = Order.objects.all()
+    serializer_class = OrderCreateSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class UserOrderListApiView(generics.ListAPIView):
@@ -127,13 +132,21 @@ Purpose: Sign this message to verify wallet ownership and continue login.
 
 class VerifyLoginView(APIView):
     def post(self, request):
-        email = request.data.get("email")
+#        email = request.data.get("email")
         wallet = request.data.get("wallet_address")
         signature = request.data.get("signature")
         nonce = request.data.get("nonce")
 
+        if isinstance(wallet, (bytes, bytearray)):
+            wallet = wallet.decode()
+        if isinstance(signature, (bytes, bytearray)):
+            signature = signature.decode()
+
+        print("wallet type:", type(wallet), "->", wallet[:10])
+        print("signature type:", type(signature), "->", signature[:10])
+
         try:
-            user = User.objects.get(email=email, wallet_address=wallet)
+            user = User.objects.get(wallet_address=wallet)
         except User.DoesNotExist:
             return Response(
                 {
@@ -172,7 +185,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
         try:
             sig = Signature.from_string(signature)
             pubkey = Pubkey.from_string(wallet)
-            if not pubkey.verify(message.encode("utf-8"), sig):
+            if not sig.verify(message.encode("utf-8"), pubkey):
                 return Response(
                     {
                         "error": "signature invalid"

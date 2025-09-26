@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { addToCart } from "../store/cartSlice";
 
 const MenuPage = ({ searchQuery, activeFilter }) => {
   const [products, setProducts] = useState([]);
@@ -8,6 +9,17 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Function to handle adding product to cart
+  const handleAddToCart = (product) => {
+    dispatch(addToCart({
+      productId: product.id,
+      name: product.name,
+      price: Number(product.price),
+    }));
+    // You can also show a toast/alert here if needed
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -41,12 +53,16 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
 
         const data = await res.json();
         console.log("API Data:", data);
-        setProducts(data);
-        setFilteredProducts(data);
+
+        setProducts(data.results || data);
+        setFilteredProducts(data.results || data);
       } catch (err) {
-        
+        console.error("API fetch failed:", err.message);
+        setError("API fetch failed. Showing mock data.");
+
         const mockData = [
           {
+            id: 1,
             name: "Jollof Rice",
             description: "Spicy rice",
             price: 20,
@@ -54,6 +70,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
             category: "Rice",
           },
           {
+            id: 2,
             name: "Semo",
             description: "Hot semo and soup",
             price: 25,
@@ -61,6 +78,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
             category: "Swallow",
           },
           {
+            id: 3,
             name: "Coke",
             description: "Chilled soft drink",
             price: 8,
@@ -71,10 +89,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         console.log("Mock Data:", mockData);
         setProducts(mockData);
         setFilteredProducts(mockData);
-        setError(null);
-        
-
-        console.error(err.message);
       } finally {
         setLoading(false);
       }
@@ -100,21 +114,22 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   }, [products, activeFilter, searchQuery]);
 
   if (loading) return <p>Loading products...</p>;
-  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
   if (filteredProducts.length === 0) return <p>No products found.</p>;
 
   return (
     <div>
       <h2 style={{ padding: "1rem" }}>Menu</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <div className="menu-grid">
         {filteredProducts.map((product, index) => (
           <div key={index} className="iitem">
-            <div className="imager">
-              <img
-                src="https://via.placeholder.com/150"
-                alt={product.name}
-              />
+            {/* Image and favorite button commented out */}
+            {/* <div className="imager">
+              <img src="https://via.placeholder.com/150" alt={product.name} />
               <button className="fav-btn">♥</button>
+            </div> */}
+            <div className="imager">
+              <img src="https://via.placeholder.com/150" alt={product.name} />
             </div>
             <div className="iitem__details">
               <h3>{product.name}</h3>
@@ -125,7 +140,12 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
                   ? `In Stock: ${product.stock}`
                   : "Out of Stock"}
               </p>
-              <button className="add-btn">Add</button>
+              <button
+                className="add-btn"
+                onClick={() => handleAddToCart(product)}
+              >
+                Add
+              </button>
             </div>
           </div>
         ))}

@@ -5,6 +5,7 @@ import Login from './Pages/Login.jsx'
 import Signup from './Pages/Signup.jsx'
 import Vendors from './Pages/Vendors.jsx'
 import Favourite from './Pages/Favourite.jsx'
+import Dashboard from './Pages/Dashboard.jsx' 
 import ProtectedRoute from "./Components/ProtectedRoute.jsx"
 // import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 // import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -55,7 +56,9 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import '@solana/wallet-adapter-react-ui/styles.css'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-// import Home from './pages/home';
+import Cart from "../src/Pages/Cart.jsx"
+
+
 
 function App() {
   const wallets = [new PhantomWalletAdapter()]
@@ -68,7 +71,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Login />} />
-              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
 
               <Route path="/signup" element={<Signup />} />
 
@@ -89,6 +92,23 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <Cart/>
+                  </ProtectedRoute>
+                }
+              />  
 
             </Routes>
           </BrowserRouter>
