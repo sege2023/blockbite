@@ -31,10 +31,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
+# SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
+# commenting out secret key interfering with build on render uncomment it if you want to use it locally
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -197,5 +198,5 @@ AWS_S3_REGION_NAME = 'auto'
 
 # Production settings
 # DEBUG = os.environ.get("DEBUG") == "True"
-DEBUG = os.environ.get("DEBUG")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 SECRET_KEY = os.environ.get("SECRET_KEY")
