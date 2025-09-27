@@ -31,11 +31,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
+SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
 # commenting out secret key interfering with build on render uncomment it if you want to use it locally
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -120,31 +120,38 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 #     }
 # }
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL:
-    url = urlparse(DATABASE_URL)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": url.path[1:],
-            "USER": url.username,
-            "PASSWORD": url.password,
-            "HOST": url.hostname,
-            "PORT": url.port,
-        }
-    }
-else:
+#DATABASE_URL = os.environ.get("DATABASE_URL")
+#if DATABASE_URL:
+#    url = urlparse(DATABASE_URL)
+#    DATABASES = {
+#        "default": {
+#            "ENGINE": "django.db.backends.postgresql",
+#            "NAME": url.path[1:],
+#            "USER": url.username,
+#            "PASSWORD": url.password,
+#            "HOST": url.hostname,
+#            "PORT": url.port,
+#        }
+#    }
+#else:
     # Fallback to SQLite for local development
-    DATABASES = {
-        'default': {
-            'NAME': env('DB_NAME'),
-            'USER': env('DB_USER'),
-            'PASSWORD': env('DB_PASSWORD'),
-            'HOST': env('DB_HOST'),
-            'PORT': env('DB_PORT'),
-        }
-    }
+#    DATABASES = {
+#        'default': {
+#            'NAME': env('DB_NAME'),
+#            'USER': env('DB_USER'),
+#            'PASSWORD': env('DB_PASSWORD'),
+#            'HOST': env('DB_HOST'),
+#            'PORT': env('DB_PORT'),
+#        }
+#    }
 
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 
 # Password validation
@@ -183,6 +190,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
@@ -235,7 +244,8 @@ AWS_S3_REGION_NAME = 'auto'
 # Production settings
 # DEBUG = os.environ.get("DEBUG") == "True"
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k")
+
 
 
 if not DEBUG:
