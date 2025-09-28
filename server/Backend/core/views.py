@@ -16,7 +16,13 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.message import Message
 from datetime import datetime, timezone, timedelta
+import base58
 import based58
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
+import base58
+import based58
+
 
 import os
 import json
@@ -208,22 +214,34 @@ Purpose: Sign this message to verify wallet ownership and continue login.
             status=status.HTTP_200_OK,
         )
 
-
 class VerifyLoginView(APIView):
     def post(self, request):
-#        email = request.data.get("email")
         wallet = request.data.get("wallet_address")
         signature = request.data.get("signature")
         nonce = request.data.get("nonce")
 
-        if isinstance(wallet, (bytes, bytearray)):
-            wallet = wallet.decode()
-        if isinstance(signature, (bytes, bytearray)):
-            signature = signature.decode()
+        if not isinstance(wallet, str) or not isinstance(signature, str):
+            return Response(
+                {
+                    "error": "wallet and signature must be base58 strings"
+                },
+                status=400
+            )
 
-        print("wallet type:", type(wallet), "->", wallet[:10])
-        print("signature type:", type(signature), "->", signature[:10])
+        try:
+            # Decode base58 into bytes
+            wallet_bytes = base58.b58decode(wallet)
+            signature_bytes = base58.b58decode(signature)
+            pubkey = Pubkey.from_bytes(wallet_bytes)  # just for consistency/storage
+        except Exception:
+            return Response(
+                {
+                    "error": "invalid wallet or signature format"
+                },
+                status=400
+            )
 
+        
         try:
             user = User.objects.get(wallet_address=wallet)
         except User.DoesNotExist:
@@ -231,9 +249,10 @@ class VerifyLoginView(APIView):
                 {
                     "error": "invalid credentials"
                 },
-                status=400    
+                status=400
             )
 
+        
         if user.login_nonce != nonce:
             return Response(
                 {
@@ -242,14 +261,13 @@ class VerifyLoginView(APIView):
                 status=400
             )
 
-        if user.nonce_issued_at:
-            if datetime.now(timezone.utc) - user.nonce_issued_at > timedelta(minutes=5):
-                return Response(
-                    {
-                        "error": "nonce expired"
-                    },
-                    status=400
-                )
+        if user.nonce_issued_at and datetime.now(timezone.utc) - user.nonce_issued_at > timedelta(minutes=5):
+            return Response(
+                {
+                    "error": "nonce expired"
+                },
+                status=400
+            )
 
         issued_at_str = user.nonce_issued_at.isoformat()
         message = f"""Blockbite Authentication
@@ -262,6 +280,16 @@ Purpose: Sign this message to verify wallet ownership and continue login.
 """
 
         try:
+            verify_key = VerifyKey(wallet_bytes)
+            verify_key.verify(message.encode("utf-8"), signature_bytes)
+        except BadSignatureError:
+            return Response(
+                {
+                    "error": "signature invalid"
+                },
+                status=400
+            )
+
             sig = Signature.from_string(signature)
             pubkey = Pubkey(based58.b58decode(wallet))  
 
@@ -272,6 +300,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
                     },
                     status=400
                 )
+
         except Exception as e:
             return Response(
                 {
@@ -280,7 +309,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
                 status=400
             )
 
-        # success
+        # Success
         user.login_nonce = None
         user.nonce_issued_at = None
         user.save(update_fields=["login_nonce", "nonce_issued_at"])

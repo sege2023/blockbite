@@ -15,7 +15,11 @@ const Login = () => {
 
     setLoading(true);
     try {
+
+      // 1. Get challenge (nonce + message) from backend
+
       // 1. Request challenge from backend
+
       const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,6 +34,25 @@ const Login = () => {
         alert("Challenge API failed: " + errText);
         return;
       }
+
+
+      // Expecting both `nonce` and `message`
+      const { nonce, message } = await challengeRes.json();
+
+      // 2. Sign full message (backend must send the formatted string)
+      const encodedMessage = new TextEncoder().encode(message);
+      const signature = await signMessage(encodedMessage);
+
+      // 3. Send signature to backend for verification
+      const res = await fetch("http://127.0.0.1:8000/api/user/verify-login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet_address: publicKey.toBase58(),
+          signature: bs58.encode(signature),
+          nonce: nonce,
+        }),
+      });
 
       const { nonce, message } = await challengeRes.json();
 
@@ -51,6 +74,7 @@ const Login = () => {
         }
       );
 
+
       const data = await verifyRes.json();
       if (verifyRes.ok) {
         localStorage.setItem("token", data.tokens.access);
@@ -59,13 +83,11 @@ const Login = () => {
       } else {
         console.error("Verify error:", data);
         alert("Login failed: " + JSON.stringify(data));
-        
-        
+        window.location.href = "/vendors";
       }
     } catch (err) {
       console.error("Login failed:", err);
       alert("Login failed. Try again.");
-      
     } finally {
       setLoading(false);
     }
