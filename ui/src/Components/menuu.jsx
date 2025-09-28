@@ -11,7 +11,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Handle adding product to cart
+
   const handleAddToCart = async (product) => {
     dispatch(addToCart({
       productId: product.id,
@@ -20,11 +20,11 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     }));
 
     const token = localStorage.getItem("token");
-    if (!token) return; // skip API if not logged in
+    if (!token) return; 
 
     try {
       await fetch("http://127.0.0.1:8000/orders/", {
-        method: "POST", // adjust if your API uses PATCH for existing orders
+        method: "POST", 
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     }
   };
 
-  // Fetch products from backend
+  
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
@@ -113,7 +113,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchProducts();
   }, [navigate]);
 
-  // Fetch existing cart items for logged in user
+  
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -139,7 +139,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchCart();
   }, [dispatch]);
 
-  // Filter products based on search and category
+  
   useEffect(() => {
     let temp = [...products];
 

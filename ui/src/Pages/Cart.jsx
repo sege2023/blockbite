@@ -1,9 +1,13 @@
 import React from 'react'
+import "../Styles/Cart.scss"
+import CNav from '../Components/cNav.jsx'
+import Hero from '../Components/Hero.jsx'
 
 const Cart = () => {
   return (
     <div>
-      <h1>hiiii</h1>
+      <CNav/>
+      <Hero/>
     </div>
   )
 }
