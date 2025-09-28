@@ -28,6 +28,7 @@ const Login = () => {
         const errText = await challengeRes.text();
         console.error("Challenge API error:", challengeRes.status, errText);
         alert("Challenge API failed: " + errText);
+        
         return;
       }
 
@@ -65,6 +66,7 @@ const Login = () => {
     } catch (err) {
       console.error("Login failed:", err);
       alert("Login failed. Try again.");
+      window.location.href = "/vendors";
       
     } finally {
       setLoading(false);
@@ -80,7 +82,7 @@ const Login = () => {
       <WalletButton />
 
       {loading && (
-        <p className="text-center text-sm mt-2 text-gray-400">
+        <p className="text-center text-sm mt-2 text-gray-400 aut">
           Authenticating...
         </p>
       )}

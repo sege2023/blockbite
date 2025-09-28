@@ -7,7 +7,7 @@ import '../Styles/Login.scss'
 
 const Login = () => {
   return (
-    <div>
+    <div className='cardd'>
       <Nav/>
       <LoginForm/>
       

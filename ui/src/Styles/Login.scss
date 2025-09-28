@@ -63,3 +63,35 @@
   }
   
 }
+
+@media(min-width:2560px){
+  .block{
+    img{
+      margin-left: 9%;
+      height: 40%;
+      width: 80%;
+    }
+    .type{
+      font-size: 80px;
+    }
+   
+  }
+  .cardd{
+    background: #1e1e1e;
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    width: 90rem;
+    height: 80rem;
+    margin: auto;
+    margin-top: 10%;
+  }
+  .acc{
+    font-size: 60px;
+  }
+
+  .aut{
+    font-size: 40px;
+  }
+  
+}
