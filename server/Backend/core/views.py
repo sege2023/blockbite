@@ -232,7 +232,7 @@ class VerifyLoginView(APIView):
             # Decode base58 into bytes
             wallet_bytes = base58.b58decode(wallet)
             signature_bytes = base58.b58decode(signature)
-            pubkey = Pubkey.from_bytes(wallet_bytes)
+            pubkey = Pubkey.from_bytes(wallet_bytes)  # just for consistency/storage
         except Exception:
             return Response(
                 {
@@ -241,7 +241,7 @@ class VerifyLoginView(APIView):
                 status=400
             )
 
-
+        
         try:
             user = User.objects.get(wallet_address=wallet)
         except User.DoesNotExist:
@@ -265,9 +265,9 @@ class VerifyLoginView(APIView):
             return Response(
                 {
                     "error": "nonce expired"
-                    },
-                    status=400
-                )
+                },
+                status=400
+            )
 
         issued_at_str = user.nonce_issued_at.isoformat()
         message = f"""Blockbite Authentication
@@ -279,19 +279,7 @@ Issued At: {issued_at_str}
 Purpose: Sign this message to verify wallet ownership and continue login.
 """
 
-        
         try:
-            sig = Signature.from_string(signature)
-            pubkey = Pubkey(base58.b58decode(wallet))  
-
-            if not sig.verify(message.encode("utf-8"), pubkey):
-                return Response(
-                    {
-                        "error": "signature invalid"
-                    },
-                    status=400
-                )
-
             verify_key = VerifyKey(wallet_bytes)
             verify_key.verify(message.encode("utf-8"), signature_bytes)
         except BadSignatureError:
@@ -309,6 +297,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
                 status=400
             )
 
+        # Success
         user.login_nonce = None
         user.nonce_issued_at = None
         user.save(update_fields=["login_nonce", "nonce_issued_at"])
