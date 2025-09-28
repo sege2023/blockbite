@@ -15,7 +15,7 @@ const Login = () => {
 
     setLoading(true);
     try {
-      // 1. Get challenge (nonce) from backend
+      
       const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,13 +31,11 @@ const Login = () => {
         return;
       }
 
-      const { nonce } = await challengeRes.json();
+      const { nonce, message } = await challengeRes.json();
 
-      // 2. Sign challenge
-      const message = new TextEncoder().encode(nonce);
-      const signature = await signMessage(message);
+      const encodedMessage = new TextEncoder().encode(message);
+      const signature = await signMessage(encodedMessage);
 
-      // 3. Verify signature with backend
       const res = await fetch("http://127.0.0.1:8000/api/user/verify-login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,12 +54,11 @@ const Login = () => {
       } else {
         console.error("Verify error:", data);
         alert("Login failed: " + JSON.stringify(data));
-        window.location.href = "/vendors"; 
+        window.location.href = "/vendors";
       }
     } catch (err) {
       console.error("Login failed:", err.message);
       alert("Login failed. Try again.");
-      
     } finally {
       setLoading(false);
     }
