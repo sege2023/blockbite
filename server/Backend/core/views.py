@@ -17,6 +17,84 @@ from solders.signature import Signature
 from solders.message import Message
 from datetime import datetime, timezone, timedelta
 
+import os
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import sync_to_async
+# from solana.keypair import Keypair
+from solders.keypair import Keypair
+# from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
+from solana.rpc.async_api import AsyncClient
+# from solana.system_program import SYS_PROGRAM_ID
+from solders.system_program import ID as SYS_PROGRAM_ID
+# from solana.utils.
+from anchorpy import Program, Provider, Idl
+from pathlib import Path
+from .serializers import OrderCreateSerializer
+
+RPC_URL = "https://api.devnet.solana.com"
+PROGRAM_ID = Pubkey.from_string("9WAZQTunxCMK9cJbn67vDrFhtsYPDCZpuJzquyH4NnKx")
+VENDOR_PUBKEY = Pubkey.from_string("CZmkNn3pixHtcWF5dRPY87Pd2uyJWrvgtN8rmbiQGGkZ")
+mint = os.getenv('MINT')
+MINT = Pubkey.from_string(mint)
+VENDOR_KEYPAIR = Keypair.from_base58_string(os.getenv('VENDOR_PRIVATE_KEY'))
+
+async def get_program():
+    client = AsyncClient(RPC_URL)
+    idl_path = Path('backend/idl/onchain.json')  # Ensure IDL is in repo
+    with open(idl_path, 'r') as f:
+        idl = Idl.from_json(f.read())
+    provider = Provider(client, VENDOR_KEYPAIR)
+    program = Program(idl, PROGRAM_ID, provider)
+    return program
+
+@csrf_exempt
+async def prepare_checkout(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        serializer = OrderCreateSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            # Create DB order
+            order = await sync_to_async(serializer.save)(vendor=str(VENDOR_PUBKEY))  # Set vendor
+            
+            # Create on-chain order
+            program = await get_program()
+            order_id = order.order_id
+            price = int(float(order.total_price) * 10**6)  # USDC decimals=6
+            
+            order_pda = Pubkey.find_program_address(
+                [b"order", order_id.to_bytes(8, 'le')],
+                PROGRAM_ID
+            )[0]
+            
+            await program.rpc["add_order"](order_id, price, ctx={"accounts": {
+                "order": order_pda,
+                "vendor": VENDOR_KEYPAIR.public_key,
+                "system_program": SYS_PROGRAM_ID,
+            }})
+            
+            return JsonResponse({
+                'orderId': order_id,
+                'price': price,
+                'vendor': str(VENDOR_PUBKEY),
+                'mint': str(MINT),
+            })
+        return JsonResponse(serializer.errors, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=400)
+
+@csrf_exempt
+async def save_transaction(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        order = await sync_to_async(Order.objects.get)(order_id=data['orderId'])
+        order.tx_hash = data['txSignature']
+        order.status = 'completed'
+        await sync_to_async(order.save)()
+        return JsonResponse({'status': 'saved'})
+    return JsonResponse({'error': 'Invalid method'}, status=400)
+
 # Create your views here.
 
 class ProductListCreateApiView(generics.ListCreateAPIView):

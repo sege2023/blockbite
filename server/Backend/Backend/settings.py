@@ -31,7 +31,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
+SECRET_KEY = 'django-insecure-*7u4920$o1_!w8w6eofg%v!95bk=x-ut4j$&!yiihaqdsyv(0k'
 # commenting out secret key interfering with build on render uncomment it if you want to use it locally
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -95,13 +95,15 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # DATABASES = {
-# #    'default': {
-# #       'NAME': env('DB_NAME'),
-# #       'USER': env('DB_USER'),
-# #      'PASSWORD': env('DB_PASSWORD'),
-# #      'HOST': env('DB_HOST'),
-# #      'PORT': env('DB_PORT'),
-
+#    'default': {
+#         "ENGINE": "django.db.backends.postgresql",
+#         'NAME': env('DB_NAME'),
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#         'HOST': env('DB_HOST'),
+#         'PORT': env('DB_PORT'),
+#    }
+# }
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
@@ -134,9 +136,9 @@ if DATABASE_URL:
         }
     }
 else:
-    # Fallback to SQLite for local development
     DATABASES = {
         'default': {
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': env('DB_NAME'),
             'USER': env('DB_USER'),
             'PASSWORD': env('DB_PASSWORD'),

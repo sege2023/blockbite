@@ -3,7 +3,8 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser, Permissio
 from django.utils.translation import gettext_lazy
 import uuid
 from .utils import upload_to_r2
-
+import os
+publickey = os.getenv('VENDOR_PUBLIC_KEY')  
 
 class CustomUserManager(BaseUserManager):
 #   def create_user(self, email, password, **extra_fields):
@@ -77,6 +78,8 @@ class Product(models.Model):
     image = models.ImageField(upload_to="Products", blank=True, null=True)
     image_r2_url = models.URLField(blank=True, null=True)  # R2 image URL
     image_r2_key = models.CharField(max_length=500, blank=True, null=True)  # For deletion later
+    vendor = models.CharField(max_length=44, default='CZmkNn3pixHtcWF5dRPY87Pd2uyJWrvgtN8rmbiQGGkZ')  # Base58 pubkey length ~44
+    mint = models.CharField(max_length=44, default='4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU')  # Devnet USDC mint
 
 
     @property
