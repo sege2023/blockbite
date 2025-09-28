@@ -16,7 +16,7 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.message import Message
 from datetime import datetime, timezone, timedelta
-import base58
+import based58
 
 import os
 import json
@@ -263,7 +263,7 @@ Purpose: Sign this message to verify wallet ownership and continue login.
 
         try:
             sig = Signature.from_string(signature)
-            pubkey = Pubkey(base58.b58decode(wallet))  
+            pubkey = Pubkey(based58.b58decode(wallet))  
 
             if not sig.verify(message.encode("utf-8"), pubkey):
                 return Response(
