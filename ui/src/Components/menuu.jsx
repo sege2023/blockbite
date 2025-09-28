@@ -11,7 +11,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-
   const handleAddToCart = async (product) => {
     dispatch(addToCart({
       productId: product.id,
@@ -39,16 +38,14 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     }
   };
 
-  
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
-
-      // if (!token) {
-      //   alert("Please login first.");
-      //   navigate("/");
-      //   return;
-      // }
+      if (!token) {
+        alert("Please login first.");
+        navigate("/");
+        return;
+      }
 
       try {
         const res = await fetch("http://127.0.0.1:8000/products/", {
@@ -58,18 +55,17 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
           },
         });
 
-        // if (res.status === 401) {
-        //   alert("Session expired. Please login again.");
-        //   localStorage.removeItem("token");
-        //   localStorage.removeItem("refresh");
-        //   navigate("/");
-        //   return;
-        // }
+        if (res.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("refresh");
+          navigate("/");
+          return;
+        }
 
         if (!res.ok) throw new Error(`Failed to fetch products. Status: ${res.status}`);
 
         const data = await res.json();
-        console.log("API Data:", data);
         setProducts(data.results || data);
         setFilteredProducts(data.results || data);
       } catch (err) {
@@ -77,32 +73,10 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         setError("API fetch failed. Showing mock data.");
 
         const mockData = [
-          {
-            id: 1,
-            name: "Jollof Rice",
-            description: "Spicy rice",
-            price: 20,
-            stock: 5,
-            category: "Rice",
-          },
-          {
-            id: 2,
-            name: "Semo",
-            description: "Hot semo and soup",
-            price: 25,
-            stock: 2,
-            category: "Swallow",
-          },
-          {
-            id: 3,
-            name: "Coke",
-            description: "Chilled soft drink",
-            price: 8,
-            stock: 10,
-            category: "Drinks",
-          },
+          { id: 1, name: "Jollof Rice", description: "Spicy rice", price: 20, stock: 5, category: "Rice", image: null },
+          { id: 2, name: "Semo", description: "Hot semo and soup", price: 25, stock: 2, category: "Swallow", image: null },
+          { id: 3, name: "Coke", description: "Chilled soft drink", price: 8, stock: 10, category: "Drinks", image: null },
         ];
-        console.log("Mock Data:", mockData);
         setProducts(mockData);
         setFilteredProducts(mockData);
       } finally {
@@ -113,7 +87,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchProducts();
   }, [navigate]);
 
-  
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -139,7 +112,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchCart();
   }, [dispatch]);
 
-  
   useEffect(() => {
     let temp = [...products];
 
@@ -156,6 +128,11 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     setFilteredProducts(temp);
   }, [products, activeFilter, searchQuery]);
 
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://via.placeholder.com/150";
+    return imagePath.startsWith("http") ? imagePath : `http://127.0.0.1:8000${imagePath}`;
+  };
+
   if (loading) return <p>Loading products...</p>;
   if (filteredProducts.length === 0) return <p>No products found.</p>;
 
@@ -166,13 +143,8 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
       <div className="menu-grid">
         {filteredProducts.map((product, index) => (
           <div key={index} className="iitem">
-            {/* Image and favorite button commented out */}
-            {/* <div className="imager">
-              <img src="https://via.placeholder.com/150" alt={product.name} />
-              <button className="fav-btn">♥</button>
-            </div> */}
             <div className="imager">
-              <img src="https://via.placeholder.com/150" alt={product.name} />
+              <img src={getImageUrl(product.image)} alt={product.name} />
             </div>
             <div className="iitem__details">
               <h3>{product.name}</h3>
