@@ -15,11 +15,7 @@ const Login = () => {
 
     setLoading(true);
     try {
-
-      // 1. Get challenge (nonce + message) from backend
-
       // 1. Request challenge from backend
-
       const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,7 +31,6 @@ const Login = () => {
         return;
       }
 
-
       // Expecting both `nonce` and `message`
       const { nonce, message } = await challengeRes.json();
 
@@ -44,23 +39,6 @@ const Login = () => {
       const signature = await signMessage(encodedMessage);
 
       // 3. Send signature to backend for verification
-      const res = await fetch("http://127.0.0.1:8000/api/user/verify-login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          wallet_address: publicKey.toBase58(),
-          signature: bs58.encode(signature),
-          nonce: nonce,
-        }),
-      });
-
-      const { nonce, message } = await challengeRes.json();
-
-      // 2. Sign the challenge message
-      const encodedMessage = new TextEncoder().encode(message);
-      const signature = await signMessage(encodedMessage);
-
-      // 3. Send signature and wallet to backend for verification
       const verifyRes = await fetch(
         "http://127.0.0.1:8000/api/user/verify-login/",
         {
@@ -73,7 +51,6 @@ const Login = () => {
           }),
         }
       );
-
 
       const data = await verifyRes.json();
       if (verifyRes.ok) {
