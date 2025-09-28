@@ -32,13 +32,14 @@ const Login = () => {
         return;
       }
 
+      // Expecting both `nonce` and `message`
       const { nonce, message } = await challengeRes.json();
 
-      // 2. Sign the challenge message
+      // 2. Sign full message (backend must send the formatted string)
       const encodedMessage = new TextEncoder().encode(message);
       const signature = await signMessage(encodedMessage);
 
-      // 3. Send signature and wallet to backend for verification
+      // 3. Send signature to backend for verification
       const verifyRes = await fetch(
         "http://127.0.0.1:8000/api/user/verify-login/",
         {
@@ -60,14 +61,11 @@ const Login = () => {
       } else {
         console.error("Verify error:", data);
         alert("Login failed: " + JSON.stringify(data));
-        
-        
+        window.location.href = "/vendors";
       }
     } catch (err) {
       console.error("Login failed:", err);
       alert("Login failed. Try again.");
-      window.location.href = "/vendors";
-      
     } finally {
       setLoading(false);
     }
