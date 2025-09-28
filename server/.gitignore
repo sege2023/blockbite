@@ -13,3 +13,4 @@ media/
 .env
 Products/
 download.jpeg
+staticfiles/

@@ -95,13 +95,15 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # DATABASES = {
-# #    'default': {
-# #       'NAME': env('DB_NAME'),
-# #       'USER': env('DB_USER'),
-# #      'PASSWORD': env('DB_PASSWORD'),
-# #      'HOST': env('DB_HOST'),
-# #      'PORT': env('DB_PORT'),
-
+#    'default': {
+#         "ENGINE": "django.db.backends.postgresql",
+#         'NAME': env('DB_NAME'),
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#         'HOST': env('DB_HOST'),
+#         'PORT': env('DB_PORT'),
+#    }
+# }
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
@@ -120,6 +122,30 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 #     }
 # }
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    url = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": url.path[1:],
+            "USER": url.username,
+            "PASSWORD": url.password,
+            "HOST": url.hostname,
+            "PORT": url.port,
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
+    }
 #DATABASE_URL = os.environ.get("DATABASE_URL")
 #if DATABASE_URL:
 #    url = urlparse(DATABASE_URL)

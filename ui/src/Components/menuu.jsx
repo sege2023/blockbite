@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../store/cartSlice";
+import { addToCart, setCart } from "../store/cartSlice";
 
 const MenuPage = ({ searchQuery, activeFilter }) => {
   const [products, setProducts] = useState([]);
@@ -11,16 +11,35 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Function to handle adding product to cart
-  const handleAddToCart = (product) => {
+  // Handle adding product to cart
+  const handleAddToCart = async (product) => {
     dispatch(addToCart({
       productId: product.id,
       name: product.name,
       price: Number(product.price),
     }));
-    // You can also show a toast/alert here if needed
+
+    const token = localStorage.getItem("token");
+    if (!token) return; // skip API if not logged in
+
+    try {
+      await fetch("http://127.0.0.1:8000/orders/", {
+        method: "POST", // adjust if your API uses PATCH for existing orders
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          quantity: 1
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to update cart on server:", err);
+    }
   };
 
+  // Fetch products from backend
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
@@ -47,13 +66,10 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         //   return;
         // }
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch products. Status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Failed to fetch products. Status: ${res.status}`);
 
         const data = await res.json();
         console.log("API Data:", data);
-
         setProducts(data.results || data);
         setFilteredProducts(data.results || data);
       } catch (err) {
@@ -97,6 +113,33 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchProducts();
   }, [navigate]);
 
+  // Fetch existing cart items for logged in user
+  useEffect(() => {
+    const fetchCart = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/orders/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`Failed to fetch cart. Status: ${res.status}`);
+        const data = await res.json();
+        const items = data.results[0]?.items.map(item => ({
+          productId: item.product_id,
+          name: item.product_name,
+          price: Number(item.product_price),
+          quantity: item.quantity
+        })) || [];
+        dispatch(setCart(items));
+      } catch (err) {
+        console.error("Failed to fetch cart from server:", err);
+      }
+    };
+    fetchCart();
+  }, [dispatch]);
+
+  // Filter products based on search and category
   useEffect(() => {
     let temp = [...products];
 
@@ -136,9 +179,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
               <p className="desc">{product.description}</p>
               <p className="price">${product.price}</p>
               <p className="stock">
-                {product.stock > 0
-                  ? `In Stock: ${product.stock}`
-                  : "Out of Stock"}
+                {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
               </p>
               <button
                 className="add-btn"

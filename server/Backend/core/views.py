@@ -21,6 +21,7 @@ import based58
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 import base58
+import based58
 
 
 import os
@@ -100,7 +101,6 @@ async def save_transaction(request):
         await sync_to_async(order.save)()
         return JsonResponse({'status': 'saved'})
     return JsonResponse({'error': 'Invalid method'}, status=400)
-
 
 # Create your views here.
 
@@ -289,6 +289,18 @@ Purpose: Sign this message to verify wallet ownership and continue login.
                 },
                 status=400
             )
+
+            sig = Signature.from_string(signature)
+            pubkey = Pubkey(based58.b58decode(wallet))  
+
+            if not sig.verify(message.encode("utf-8"), pubkey):
+                return Response(
+                    {
+                        "error": "signature invalid"
+                    },
+                    status=400
+                )
+
         except Exception as e:
             return Response(
                 {

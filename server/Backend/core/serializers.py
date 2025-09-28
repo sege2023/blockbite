@@ -49,6 +49,9 @@ class ProductSerializer(serializers.ModelSerializer):
             'price',
             'stock',
             'image',
+            'vendor', 
+            'mint',
+            'image_r2_url',
         )
 
     def get_image_url(self, obj):
