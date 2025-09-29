@@ -212,26 +212,17 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setCart, clearCart } from "../store/cartSlice";
-import { checkout } from "./checkout";
-import { PublicKey } from "@solana/web3.js";
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
+import { useNavigate } from "react-router-dom";
+import { setCart } from "../store/cartSlice";
 
 const CartPage = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
-  const { publicKey } = useWallet();
-  const { connection } = useConnection();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [checkoutStatus, setCheckoutStatus] = useState("idle");
-
   const token = localStorage.getItem("token");
-
-  // Ref to store pending updates
   const pendingUpdates = useRef({});
 
-  // Fetch cart from API on load
   useEffect(() => {
     const fetchCart = async () => {
       if (!token) {
@@ -269,12 +260,11 @@ const CartPage = () => {
     fetchCart();
   }, [dispatch, token]);
 
-  // Function to flush pending updates to API
   const flushUpdates = async () => {
     if (!token || Object.keys(pendingUpdates.current).length === 0) return;
 
     const updates = pendingUpdates.current;
-    // pendingUpdates.current = {};
+    pendingUpdates.current = {};
 
     try {
       for (const productId in updates) {
@@ -293,10 +283,8 @@ const CartPage = () => {
     }
   };
 
-  // Flush updates every 2 seconds and on unmount
   useEffect(() => {
     const interval = setInterval(flushUpdates, 2000);
-
     return () => {
       clearInterval(interval);
       flushUpdates();
@@ -324,97 +312,74 @@ const CartPage = () => {
   const increaseQuantity = (productId) => updateQuantity(productId, 1);
   const decreaseQuantity = (productId) => updateQuantity(productId, -1);
 
-  const handleCheckout = async () => {
-    // if (!publicKey) {
-    //   alert("Connect your wallet first!");
-    //   return;
-    // }
-    if (cartItems.length === 0) {
-      alert("Cart is empty!");
-      return;
-    }
+  if (loading) return <p className="loading">Loading cart...</p>;
+  if (cartItems.length === 0) return <p className="empty-cart">Your cart is empty</p>;
 
-    setCheckoutStatus("processing");
-    try {
-      // FIXED: Send product_id instead of product name
-      const payload = {
-        items: cartItems.map((item) => ({
-          product: item,  // 👈 Changed from product to product_id
-          quantity: item.quantity,
-        })),
-      };
-
-      const response = await fetch("http://127.0.0.1:8000/api/prepare_checkout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(JSON.stringify(errorData));
-      }
-      
-      const data = await response.json();
-
-      const mintPubkey = new PublicKey(data.mint);
-      const buyerTokenAccount = await getAssociatedTokenAddress(mintPubkey, publicKey);
-
-      await checkout({
-        orderId: data.orderId,
-        price: data.price,
-        vendor: data.vendor,
-        buyerTokenAccount: buyerTokenAccount.toString(),
-        mint: data.mint,
-      });
-
-      dispatch(clearCart());
-      setCheckoutStatus("success");
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Checkout failed: " + error.message);
-      setCheckoutStatus("error");
-    }
-  };
-
-  if (loading) return <p>Loading cart...</p>;
-  if (cartItems.length === 0) return <p>Your cart is empty</p>;
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const tax = 2.5;
+  const deliveryFee = 3.99;
+  const total = subtotal + tax + deliveryFee;
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div className="cart-page">
-      <h2>Cart</h2>
-      {cartItems.map((item) => (
-        <div key={item.productId} className="cart-item">
-          <img
-            src={item.image || "https://via.placeholder.com/150"}
-            alt={item.name}
-            className="cart-item-image"
-          />
-          <div className="cart-item-details">
-            <h3>{item.name}</h3>
-            <p>{item.description || "No description"}</p>
-            <p>${item.price}</p>
+      <h2 className="cart-title">Your Cart</h2>
+
+      <div className="cart-items">
+        {cartItems.map((item) => (
+          <div key={item.productId} className="cart-item">
+            <img
+              src={item.image || "https://via.placeholder.com/80"}
+              className="cart-item-image"
+            />
+            <div className="cart-item-details">
+              <h3>{item.name}</h3>
+              <p className="description">{item.description || "No description"}</p>
+              <p className="price">${item.price.toFixed(2)}</p>
+            </div>
             <div className="quantity-controls">
-              <button onClick={() => decreaseQuantity(item.productId)}>-</button>
+              <button onClick={() => decreaseQuantity(item.productId)} className="decrease">-</button>
               <span>{item.quantity}</span>
-              <button onClick={() => increaseQuantity(item.productId)}>+</button>
+              <button onClick={() => increaseQuantity(item.productId)} className="increase">+</button>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div className="order-summary">
+        <h3>Order Summary</h3>
+        <div className="summary-row">
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
         </div>
-      ))}
-      
-      <div className="cart-summary">
-        <p>Total: ${totalPrice.toFixed(2)}</p>
-        <button onClick={handleCheckout} disabled={checkoutStatus === "processing"}>
-          {checkoutStatus === "processing" ? "Processing..." : "Proceed to Checkout"}
+        <div className="summary-row">
+          <span>Tax</span>
+          <span>${tax.toFixed(2)}</span>
+        </div>
+        <div className="summary-row">
+          <span>Delivery Fee</span>
+          <span>${deliveryFee.toFixed(2)}</span>
+        </div>
+
+        <div className="summary-total">
+          <span>Total</span>
+          <span>${total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="cart-actions">
+        <button className="continue-btn"
+        onClick={() => navigate("/vendors")}>Continue Shopping</button>
+        <button
+          className="checkout-btn"
+          onClick={() => navigate("/checkout")}
+        >
+          Checkout
         </button>
-        {checkoutStatus === "success" && <p>Checkout successful!</p>}
-        {checkoutStatus === "error" && <p>Checkout failed. Try again.</p>}
       </div>
     </div>
   );
