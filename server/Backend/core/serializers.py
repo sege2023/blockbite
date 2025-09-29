@@ -177,9 +177,12 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 defaults={"quantity": quantity}
             )
 
-            if not created:
+            #if not created:
                 
-                order_item.quantity += quantity
+            #    order_item.quantity += quantity
+            #    order_item.save()
+            if not created:
+                order_item.quantity = quantity  # overwrite
                 order_item.save()
 
         return order
