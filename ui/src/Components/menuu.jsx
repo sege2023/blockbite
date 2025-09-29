@@ -11,16 +11,18 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-
   const handleAddToCart = async (product) => {
-    dispatch(addToCart({
-      productId: product.id,
-      name: product.name,
-      price: Number(product.price),
-    }));
+    // update Redux cart instantly
+    dispatch(
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: Number(product.price),
+      })
+    );
 
     const token = localStorage.getItem("token");
-    if (!token) return; 
+    if (!token) return;
 
     try {
       await fetch("http://127.0.0.1:8000/create-orders/", {
@@ -43,21 +45,27 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
           ]
         }),
       });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("Order create failed:", errData);
+      } else {
+        const data = await res.json();
+        console.log("Order created:", data);
+      }
     } catch (err) {
-      console.error("Failed to update cart on server:", err);
+      console.error("Network error creating order:", err.message);
     }
   };
 
-  
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
-
-      // if (!token) {
-      //   alert("Please login first.");
-      //   navigate("/");
-      //   return;
-      // }
+      if (!token) {
+        alert("Please login first.");
+        navigate("/");
+        return;
+      }
 
       try {
         const res = await fetch("http://127.0.0.1:8000/products/", {
@@ -67,18 +75,17 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
           },
         });
 
-        // if (res.status === 401) {
-        //   alert("Session expired. Please login again.");
-        //   localStorage.removeItem("token");
-        //   localStorage.removeItem("refresh");
-        //   navigate("/");
-        //   return;
-        // }
+        if (res.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("refresh");
+          navigate("/");
+          return;
+        }
 
         if (!res.ok) throw new Error(`Failed to fetch products. Status: ${res.status}`);
 
         const data = await res.json();
-        console.log("API Data:", data);
         setProducts(data.results || data);
         setFilteredProducts(data.results || data);
       } catch (err) {
@@ -86,32 +93,10 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         setError("API fetch failed. Showing mock data.");
 
         const mockData = [
-          {
-            id: 1,
-            name: "Jollof Rice",
-            description: "Spicy rice",
-            price: 20,
-            stock: 5,
-            category: "Rice",
-          },
-          {
-            id: 2,
-            name: "Semo",
-            description: "Hot semo and soup",
-            price: 25,
-            stock: 2,
-            category: "Swallow",
-          },
-          {
-            id: 3,
-            name: "Coke",
-            description: "Chilled soft drink",
-            price: 8,
-            stock: 10,
-            category: "Drinks",
-          },
+          { id: 1, name: "Jollof Rice", description: "Spicy rice", price: 20, stock: 5, category: "Rice", image: null },
+          { id: 2, name: "Semo", description: "Hot semo and soup", price: 25, stock: 2, category: "Swallow", image: null },
+          { id: 3, name: "Coke", description: "Chilled soft drink", price: 8, stock: 10, category: "Drinks", image: null },
         ];
-        console.log("Mock Data:", mockData);
         setProducts(mockData);
         setFilteredProducts(mockData);
       } finally {
@@ -122,7 +107,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchProducts();
   }, [navigate]);
 
-  
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -134,12 +118,13 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         });
         if (!res.ok) throw new Error(`Failed to fetch cart. Status: ${res.status}`);
         const data = await res.json();
-        const items = data.results[0]?.items.map(item => ({
-          productId: item.product_id,
-          name: item.product_name,
-          price: Number(item.product_price),
-          quantity: item.quantity
-        })) || [];
+        const items =
+          data.results[0]?.items.map((item) => ({
+            productId: item.product_id,
+            name: item.product_name,
+            price: Number(item.product_price),
+            quantity: item.quantity,
+          })) || [];
         dispatch(setCart(items));
       } catch (err) {
         console.error("Failed to fetch cart from server:", err);
@@ -148,7 +133,6 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchCart();
   }, [dispatch]);
 
-  
   useEffect(() => {
     let temp = [...products];
 
@@ -165,6 +149,11 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     setFilteredProducts(temp);
   }, [products, activeFilter, searchQuery]);
 
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://via.placeholder.com/150";
+    return imagePath.startsWith("http") ? imagePath : `http://127.0.0.1:8000${imagePath}`;
+  };
+
   if (loading) return <p>Loading products...</p>;
   if (filteredProducts.length === 0) return <p>No products found.</p>;
 
@@ -175,13 +164,8 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
       <div className="menu-grid">
         {filteredProducts.map((product, index) => (
           <div key={index} className="iitem">
-            {/* Image and favorite button commented out */}
-            {/* <div className="imager">
-              <img src="https://via.placeholder.com/150" alt={product.name} />
-              <button className="fav-btn">♥</button>
-            </div> */}
             <div className="imager">
-              <img src="https://via.placeholder.com/150" alt={product.name} />
+              <img src={getImageUrl(product.image)} alt={product.name} />
             </div>
             <div className="iitem__details">
               <h3>{product.name}</h3>
@@ -190,10 +174,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
               <p className="stock">
                 {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
               </p>
-              <button
-                className="add-btn"
-                onClick={() => handleAddToCart(product)}
-              >
+              <button className="add-btn" onClick={() => handleAddToCart(product)}>
                 Add
               </button>
             </div>

@@ -309,7 +309,7 @@ class OrderListApiView(generics.ListAPIView):
     #     return OrderSerializer
 
 class OrderCreateApiView(generics.CreateAPIView):
-#    queryset = Order.objects.all()
+    queryset = Order.objects.all()
     serializer_class = OrderCreateSerializer
     permission_classes = [IsAuthenticated]
 

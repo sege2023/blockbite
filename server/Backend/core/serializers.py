@@ -127,10 +127,8 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
 class OrderItemCreateSerializer(serializers.ModelSerializer):
-    product = serializers.SlugRelatedField(
-        queryset=Product.objects.all(),
-        slug_field="name"  
-    )
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
     class Meta:
         model = OrderItem
         fields = (
@@ -158,22 +156,31 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'order_id',
-            'created_at',
-            'status',
-            'items',
-            'total_price'
+            "order_id",
+            "created_at",
+            "status",
+            "items",
+            "total_price"
         )
         read_only_fields = (
-            'order_id',
-            'created_at',
-            'status'
+            "order_id",
+            "created_at",
+            "status"
         )
 
+    def get_total_price(self, obj):
+        return sum(order_item.item_subtotal for order_item in obj.items.all())
+
     def create(self, validated_data):
-        items_data = validated_data.pop('items')
-        user = self.context['request'].user
-        order = Order.objects.create(user=user, **validated_data)
+        items_data = validated_data.pop("items")
+        user = self.context["request"].user
+
+        
+        order, created = Order.objects.get_or_create(
+            user=user,
+            status=Order.StatusChoices.PENDING,
+            defaults=validated_data
+        )
 
         # user = validated_data.pop('user')
         # vendor = validated_data.pop('vendor')
@@ -183,5 +190,19 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         
 
         for item_data in items_data:
-            OrderItem.objects.create(order=order, **item_data)
+            product = item_data["product"]
+            quantity = item_data["quantity"]
+
+            
+            order_item, created = OrderItem.objects.get_or_create(
+                order=order,
+                product=product,
+                defaults={"quantity": quantity}
+            )
+
+            if not created:
+                
+                order_item.quantity += quantity
+                order_item.save()
+
         return order
