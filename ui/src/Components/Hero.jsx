@@ -56,16 +56,29 @@ const CartPage = () => {
     pendingUpdates.current = {}; // reset
 
     try {
-      for (const productId in updates) {
-        const quantity = updates[productId];
-        await fetch("http://127.0.0.1:8000/orders/", {
-          method: "POST", // adjust if your API uses PATCH
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ product_id: productId, quantity }),
-        });
+      // Convert pending updates into backend-compatible format
+      const itemsPayload = Object.entries(updates).map(
+        ([productId, quantity]) => ({
+          product: productId, // matches your serializer slug_field or PK
+          quantity,
+        })
+      );
+
+      const res = await fetch("http://127.0.0.1:8000/create-orders/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ items: itemsPayload }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("Cart update failed:", errData);
+      } else {
+        const data = await res.json();
+        console.log("Cart updated:", data);
       }
     } catch (err) {
       console.error("Failed to flush cart updates:", err);
@@ -88,7 +101,9 @@ const CartPage = () => {
 
     const newQuantity = item.quantity + delta;
     let updatedItems;
+
     if (newQuantity <= 0) {
+      // remove from frontend cart
       updatedItems = cartItems.filter((p) => p.productId !== productId);
     } else {
       updatedItems = cartItems.map((p) =>
