@@ -141,7 +141,7 @@ class OrderListApiView(generics.ListAPIView):
     permission_classes = [IsAdminUser]
 
 class OrderCreateApiView(generics.CreateAPIView):
-#    queryset = Order.objects.all()
+    queryset = Order.objects.all()
     serializer_class = OrderCreateSerializer
     permission_classes = [IsAuthenticated]
 

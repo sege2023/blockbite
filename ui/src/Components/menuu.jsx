@@ -12,29 +12,44 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   const dispatch = useDispatch();
 
   const handleAddToCart = async (product) => {
-    dispatch(addToCart({
-      productId: product.id,
-      name: product.name,
-      price: Number(product.price),
-    }));
+    // update Redux cart instantly
+    dispatch(
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: Number(product.price),
+      })
+    );
 
     const token = localStorage.getItem("token");
-    if (!token) return; 
+    if (!token) return;
 
     try {
-      await fetch("http://127.0.0.1:8000/orders/", {
-        method: "POST", 
+      const res = await fetch("http://127.0.0.1:8000/create-orders/", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          product_id: product.id,
-          quantity: 1
+          items: [
+            {
+              product: product.id, // 👈 using product.id, since your serializer expects it
+              quantity: 1,
+            },
+          ],
         }),
       });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("Order create failed:", errData);
+      } else {
+        const data = await res.json();
+        console.log("Order created:", data);
+      }
     } catch (err) {
-      console.error("Failed to update cart on server:", err);
+      console.error("Network error creating order:", err.message);
     }
   };
 
@@ -98,12 +113,13 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         });
         if (!res.ok) throw new Error(`Failed to fetch cart. Status: ${res.status}`);
         const data = await res.json();
-        const items = data.results[0]?.items.map(item => ({
-          productId: item.product_id,
-          name: item.product_name,
-          price: Number(item.product_price),
-          quantity: item.quantity
-        })) || [];
+        const items =
+          data.results[0]?.items.map((item) => ({
+            productId: item.product_id,
+            name: item.product_name,
+            price: Number(item.product_price),
+            quantity: item.quantity,
+          })) || [];
         dispatch(setCart(items));
       } catch (err) {
         console.error("Failed to fetch cart from server:", err);
@@ -153,10 +169,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
               <p className="stock">
                 {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
               </p>
-              <button
-                className="add-btn"
-                onClick={() => handleAddToCart(product)}
-              >
+              <button className="add-btn" onClick={() => handleAddToCart(product)}>
                 Add
               </button>
             </div>
