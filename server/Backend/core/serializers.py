@@ -109,6 +109,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+    # program_id = serializers.SerializerMethodField()
 
     def get_total_price(self, obj):
         order_items = obj.items.all()
@@ -134,12 +135,21 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = (
             'product',
+            # 'id',
             'quantity'
         )
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemCreateSerializer(many=True)
     total_price = serializers.SerializerMethodField()
+
+
+    # def create(self, validated_data):
+    #     # Get user from context instead of request
+    #     user = self.context.get('user')
+    #     if user and user.is_authenticated:
+    #         validated_data['user'] = user
+    #     return super().create(validated_data)
 
     def get_total_price(self, obj):
         order_items = obj.items.all()
@@ -164,6 +174,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         items_data = validated_data.pop('items')
         user = self.context['request'].user
         order = Order.objects.create(user=user, **validated_data)
+
+        # user = validated_data.pop('user')
+        # vendor = validated_data.pop('vendor')
+        
+        # # Create order
+        # order = Order.objects.create(user=user, vendor=vendor, **validated_data)
+        
 
         for item_data in items_data:
             OrderItem.objects.create(order=order, **item_data)

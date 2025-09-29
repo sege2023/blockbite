@@ -23,15 +23,24 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     if (!token) return; 
 
     try {
-      await fetch("http://127.0.0.1:8000/orders/", {
+      await fetch("http://127.0.0.1:8000/create-orders/", {
         method: "POST", 
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          product_id: product.id,
-          quantity: 1
+          // product_name: product.name,
+          // product_id: product.id,
+          // quantity: 1
+          items: [
+            {
+              // The OrderItem object must contain 'product' (ID) and 'quantity'
+              // name: product.name,
+              product: product.id, // <--- Send the product ID
+              quantity: 1
+            }
+          ]
         }),
       });
     } catch (err) {

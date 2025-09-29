@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preinstall": "npx npm-force-resolutions"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
     "@reduxjs/toolkit": "^2.9.0",
+    "@solana/spl-token": "^0.4.14",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-react": "^0.15.39",
     "@solana/wallet-adapter-react-ui": "^0.9.39",
@@ -40,5 +42,12 @@
     "globals": "^16.3.0",
     "sass": "^1.92.1",
     "vite": "^7.1.2"
+  },
+  "resolutions": {
+    "qrcode.react": "^4.2.0",
+    "react-qr-reader": "^3.0.0",
+    "use-sync-external-store": "^1.4.0",
+    "@solana/spl-token": "^0.4.14",
+    "bigint-buffer": "^1.1.5"
   }
 }
