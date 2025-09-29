@@ -7,7 +7,6 @@ const Footer = () => {
 
   const navItems = [
     { path: "/vendors", label: "Home", icon: <FaHome /> },
-    { path: "/dashboard", label: "Favorites", icon: <FaHeart /> },
     { path: "/cart", label: "Cart", icon: <FaShoppingCart /> },
     { path: "/checkout", label: "Checkout", icon: <FaCreditCard /> },
   ];

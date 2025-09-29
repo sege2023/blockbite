@@ -1,18 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setCart } from "../store/cartSlice";
 
 const CartPage = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-
   const token = localStorage.getItem("token");
-
-  // Ref to store pending updates
   const pendingUpdates = useRef({});
 
-  // Fetch cart from API on load
   useEffect(() => {
     const fetchCart = async () => {
       if (!token) {
@@ -48,18 +46,17 @@ const CartPage = () => {
     fetchCart();
   }, [dispatch, token]);
 
-  // Function to flush pending updates to API
   const flushUpdates = async () => {
     if (!token || Object.keys(pendingUpdates.current).length === 0) return;
 
     const updates = pendingUpdates.current;
-    pendingUpdates.current = {}; // reset
+    pendingUpdates.current = {};
 
     try {
       for (const productId in updates) {
         const quantity = updates[productId];
         await fetch("http://127.0.0.1:8000/orders/", {
-          method: "POST", // adjust if your API uses PATCH
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -72,13 +69,11 @@ const CartPage = () => {
     }
   };
 
-  // Flush updates every 2 seconds and on unmount
   useEffect(() => {
     const interval = setInterval(flushUpdates, 2000);
-
     return () => {
       clearInterval(interval);
-      flushUpdates(); // flush pending updates before unmount
+      flushUpdates();
     };
   }, []);
 
@@ -96,41 +91,80 @@ const CartPage = () => {
       );
     }
 
-    // Update Redux immediately
     dispatch(setCart(updatedItems));
-
-    // Add to pending updates
     pendingUpdates.current[productId] = newQuantity;
   };
 
   const increaseQuantity = (productId) => updateQuantity(productId, 1);
   const decreaseQuantity = (productId) => updateQuantity(productId, -1);
 
-  if (loading) return <p>Loading cart...</p>;
-  if (cartItems.length === 0) return <p>Your cart is empty</p>;
+  if (loading) return <p className="loading">Loading cart...</p>;
+  if (cartItems.length === 0) return <p className="empty-cart">Your cart is empty</p>;
+
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const tax = 2.5;
+  const deliveryFee = 3.99;
+  const total = subtotal + tax + deliveryFee;
 
   return (
     <div className="cart-page">
-      <h2>Cart</h2>
-      {cartItems.map((item) => (
-        <div key={item.productId} className="cart-item">
-          <img
-            src={item.image || "https://via.placeholder.com/150"}
-            alt={item.name}
-            className="cart-item-image"
-          />
-          <div className="cart-item-details">
-            <h3>{item.name}</h3>
-            <p>{item.description || "No description"}</p>
-            <p>${item.price}</p>
+      <h2 className="cart-title">Your Cart</h2>
+
+      <div className="cart-items">
+        {cartItems.map((item) => (
+          <div key={item.productId} className="cart-item">
+            <img
+              src={item.image || "https://via.placeholder.com/80"}
+              className="cart-item-image"
+            />
+            <div className="cart-item-details">
+              <h3>{item.name}</h3>
+              <p className="description">{item.description || "No description"}</p>
+              <p className="price">${item.price.toFixed(2)}</p>
+            </div>
             <div className="quantity-controls">
-              <button onClick={() => decreaseQuantity(item.productId)}>-</button>
+              <button onClick={() => decreaseQuantity(item.productId)} className="decrease">-</button>
               <span>{item.quantity}</span>
-              <button onClick={() => increaseQuantity(item.productId)}>+</button>
+              <button onClick={() => increaseQuantity(item.productId)} className="increase">+</button>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div className="order-summary">
+        <h3>Order Summary</h3>
+        <div className="summary-row">
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
         </div>
-      ))}
+        <div className="summary-row">
+          <span>Tax</span>
+          <span>${tax.toFixed(2)}</span>
+        </div>
+        <div className="summary-row">
+          <span>Delivery Fee</span>
+          <span>${deliveryFee.toFixed(2)}</span>
+        </div>
+
+        <div className="summary-total">
+          <span>Total</span>
+          <span>${total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="cart-actions">
+        <button className="continue-btn"
+        onClick={() => navigate("/vendors")}>Continue Shopping</button>
+        <button
+          className="checkout-btn"
+          onClick={() => navigate("/checkout")}
+        >
+          Checkout
+        </button>
+      </div>
     </div>
   );
 };

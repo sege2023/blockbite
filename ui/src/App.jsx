@@ -4,8 +4,7 @@
 import Login from './Pages/Login.jsx'
 import Signup from './Pages/Signup.jsx'
 import Vendors from './Pages/Vendors.jsx'
-import Favourite from './Pages/Favourite.jsx'
-import Dashboard from './Pages/Dashboard.jsx' 
+import Checkout from './Pages/Checkout.jsx'
 import ProtectedRoute from "./Components/ProtectedRoute.jsx"
 // import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 // import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -84,28 +83,29 @@ function App() {
                 }
               />
 
-              <Route
+              {/* <Route
                 path="/favourite"
                 element={
                   <ProtectedRoute>
                     <Favourite />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
 
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+              
               <Route
                 path="/cart"
                 element={
                   <ProtectedRoute>
                     <Cart/>
+                  </ProtectedRoute>
+                }
+              />  
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <Checkout/>
                   </ProtectedRoute>
                 }
               />  

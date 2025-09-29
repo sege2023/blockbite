@@ -1,11 +1,11 @@
 import React from 'react'
 
-const dash = () => {
+const Checkout = () => {
   return (
     <div>
-      <p>heyyy</p>
+      
     </div>
   )
 }
 
-export default dash
+export default Checkout
