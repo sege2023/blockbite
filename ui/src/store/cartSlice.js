@@ -17,7 +17,16 @@ const cartSlice = createSlice({
       if (existing) {
         existing.quantity += 1;
       } else {
-        state.items.push({ ...product, quantity: 1 , vendor: product.vendor, mint: product.mint});
+        state.items.push({
+          productId: product.productId,
+          name: product.name,
+          description: product.description || "No description",
+          price: Number(product.price),
+          image: product.image || "",
+          vendor: product.vendor,
+          mint: product.mint,
+          quantity: 1,
+        });
       }
     },
     removeFromCart: (state, action) => {
