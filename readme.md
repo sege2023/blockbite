@@ -15,7 +15,7 @@ A decentralized food ordering and checkout system powered by **Solana Pay**, bui
 
 ## 📸 Screenshots
 
-![Landing Page](path-to-landing.png)  
+![Landing Page](ui/public/images/demo-shot.jpg)  
 
 ![Order Flow](path-to-order.png)  
 
@@ -65,3 +65,4 @@ A decentralized food ordering and checkout system powered by **Solana Pay**, bui
     anchor deploy
      
     
+
