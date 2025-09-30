@@ -421,6 +421,7 @@
 // };
 
 // export default CartPage;
+// prod 
 
 
 import React, { useEffect, useState } from "react";
@@ -506,7 +507,7 @@ const CartPage = () => {
 
         try {
             // A. Call Express Backend to prepare the partially-signed transaction
-            const prepareResponse = await fetch("http://localhost:3000/api/checkout/prepare", {
+            const prepareResponse = await fetch("https://blockbite-proto-server.onrender.com/checkout/prepare", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -533,7 +534,8 @@ const CartPage = () => {
             await connection.confirmTransaction(signature, "confirmed");
 
             // D. Notify Express Backend of success (to save signature in DB)
-            const confirmResponse = await fetch("https://blockbite-proto-server.onrender.com/", {
+            const confirmResponse = await fetch("https://blockbite-proto-server.onrender.com/save-transaction", {
+
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
