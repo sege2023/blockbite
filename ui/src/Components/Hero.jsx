@@ -29,7 +29,7 @@ const CartPage = () => {
           data.results[0]?.items.map((item) => ({
             productId: item.product_id,
             name: item.product_name,
-            description: item.product_description || "",
+            description: item.product_description || item.description || "",
             price: Number(item.product_price),
             quantity: item.quantity,
             image: item.product_image || "",
@@ -128,7 +128,7 @@ const CartPage = () => {
             <div className="cart-item-details">
               <h3>{item.name}</h3>
               <p className="description">
-                {item.description || "No description"}
+                {item.description }
               </p>
               <p className="price">${item.price.toFixed(2)}</p>
             </div>
