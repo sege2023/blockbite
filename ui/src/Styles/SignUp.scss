@@ -1,0 +1,130 @@
+.main{
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    img{
+        max-width: 100%;
+        max-height: 100%;
+        width: 10%;
+        height: 10%;
+        margin: 5%;
+        margin-top: 10px;
+    }
+    h1{
+        font-size: 25px;
+        
+        font-weight: bold;
+        
+    }
+
+}
+
+
+Form{
+    margin-left: 10%;
+    margin-top: 8%;
+    .formm{
+        width: 90%;
+        border-radius: 10px;
+        height: 40px;
+        padding-left: 10px;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+    .error{
+        color: red;
+        text-align: center;
+        font-size: 15px;
+    }
+    
+    .sign{
+        background: linear-gradient(90deg, #9945FF 0%, #14F195 100%);
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        width: 90%;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .sign:hover{
+        opacity: 0.8;
+    }
+    .wallet{
+        background: #33263B;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        width: 90%;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        margin-top: 20px;
+    }
+    .lo{
+        text-align: center;
+        font-weight: 300;
+        font-size: 13px;
+        margin-left: -50px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        a{
+            color: #14F195;
+            cursor: pointer;
+        }
+
+    }
+}
+
+
+
+
+
+
+
+
+@media (min-width: 768px) {
+    .card{
+        background: #1e1e1e;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        width: 420px;
+        margin: auto;
+        margin-top: 10%;
+    }
+}
+
+
+@media (min-width:1024px){
+    .card{
+        width: 650px;
+
+    }
+    .main{
+        h1{
+            font-size: 35px;
+            margin-top: -10px;
+        }
+    }
+    Form{
+        label{
+            font-size: 30px;
+        }
+        .formm{
+            height: 55px;
+        }
+        .sign{
+            font-size: 30px;
+            height: 60px;
+            text-align: center;
+            padding-top: 10px;
+        }
+        .lo{
+            font-size: 20px;
+        }
+    }
+}
