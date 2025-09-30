@@ -109,6 +109,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+    # program_id = serializers.SerializerMethodField()
 
     def get_total_price(self, obj):
         order_items = obj.items.all()
@@ -130,12 +131,27 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ("product", "quantity")
-
+        fields = (
+            'product',
+            # 'id',
+            'quantity'
+        )
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemCreateSerializer(many=True)
     total_price = serializers.SerializerMethodField()
+
+
+    # def create(self, validated_data):
+    #     # Get user from context instead of request
+    #     user = self.context.get('user')
+    #     if user and user.is_authenticated:
+    #         validated_data['user'] = user
+    #     return super().create(validated_data)
+
+    def get_total_price(self, obj):
+        order_items = obj.items.all()
+        return sum(order_item.item_subtotal for order_item in order_items)
 
     class Meta:
         model = Order
@@ -165,6 +181,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             status=Order.StatusChoices.PENDING,
             defaults=validated_data
         )
+
+        # user = validated_data.pop('user')
+        # vendor = validated_data.pop('vendor')
+        
+        # # Create order
+        # order = Order.objects.create(user=user, vendor=vendor, **validated_data)
+        
 
         for item_data in items_data:
             product = item_data["product"]

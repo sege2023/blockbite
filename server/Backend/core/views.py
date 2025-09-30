@@ -22,6 +22,7 @@ from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 # import base58
 # import based58
+from rest_framework.authtoken.models import Token
 
 
 import os
@@ -29,6 +30,11 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import authentication_classes, permission_classes, api_view
+# from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 # from solana.keypair import Keypair
 from solders.keypair import Keypair
 # from solana.publickey import PublicKey
@@ -57,39 +63,195 @@ async def get_program():
     program = Program(idl, PROGRAM_ID, provider)
     return program
 
-@csrf_exempt
-async def prepare_checkout(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        serializer = OrderCreateSerializer(data=data, context={'request': request})
-        if serializer.is_valid():
-            # Create DB order
-            order = await sync_to_async(serializer.save)(vendor=str(VENDOR_PUBKEY))  # Set vendor
+def _prepare_checkout_sync(data, request):
+    """Sync version of prepare_checkout"""
+    serializer = OrderCreateSerializer(data=data, context={'request': request})
+    if serializer.is_valid():
+        order = serializer.save(vendor=str(VENDOR_PUBKEY))
+        return order, None
+    return None, serializer.errors
+
+# @api_view(['POST'])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# @csrf_exempt
+# async def prepare_checkout(request):
+#     # if request.method == 'POST':
+#         # data = json.loads(request.body)
+        
+#         if request.method != 'POST':
+#             return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+#         # Manual token authentication
+#         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+#         if not auth_header.startswith('Bearer '):
+#             return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+#         token_key = auth_header.split(' ')[1]
+#         try:
+#             token = await sync_to_async(Token.objects.get)(key=token_key)
+#             user = token.user
+#         except Token.DoesNotExist:
+#             return JsonResponse({'error': 'Invalid token'}, status=401)
+        
+#         # Parse data
+#         try:
+#             data = json.loads(request.body)
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+
+
+#         # data = request.data
+#         def _prepare_checkout_sync(data, user):
+#             """Sync version of prepare_checkout"""
+#             # context = {'user':user}
+#             serializer = OrderCreateSerializer(data=data)
+#             if serializer.is_valid():
+#                 order = serializer.save(vendor=str(VENDOR_PUBKEY))
+#                 order.user = user
+#                 order.save()
+#                 return order, None
+#             return None, serializer.errors
+#         # serializer = OrderCreateSerializer(data=data, context={'request': request})
+#         order, errors = await sync_to_async(_prepare_checkout_sync)(data, user)
+#         if order:
+#             # Create DB order
+#             # order = await sync_to_async(serializer.save)(vendor=str(VENDOR_PUBKEY))  # Set vendor
             
-            # Create on-chain order
-            program = await get_program()
+#             # Create on-chain order
+#             program = await get_program()
+#             order_id = order.order_id
+#             price = int(float(order.total_price) * 10**6)  # USDC decimals=6
+            
+#             order_pda = Pubkey.find_program_address(
+#                 [b"order", order_id.to_bytes(8, 'le')],
+#                 PROGRAM_ID
+#             )[0]
+            
+#             await program.rpc["add_order"](order_id, price, ctx={"accounts": {
+#                 "order": order_pda,
+#                 "vendor": VENDOR_KEYPAIR.public_key,
+#                 "system_program": SYS_PROGRAM_ID,
+#             }})
+            
+#             return JsonResponse({
+#                 'orderId': order_id,
+#                 'price': price,
+#                 'vendor': str(VENDOR_PUBKEY),
+#                 'mint': str(MINT),
+#             })
+#         return JsonResponse(errors, status=400)
+#     # return JsonResponse({'error': 'Invalid method'}, status=400)
+
+# @api_view(['POST'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# async def prepare_checkout(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+#     # User is already authenticated by decorators
+#     user = await sync_to_async(lambda: request.user)()
+    
+#     # Parse data
+#     try:
+#         data = json.loads(request.body)
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+#     def _prepare_checkout_sync(data, user):
+#         """Sync version of prepare_checkout"""
+#         serializer = OrderCreateSerializer(data=data)
+#         if serializer.is_valid():
+#             order = serializer.save(vendor=str(VENDOR_PUBKEY))
+#             order.user = user
+#             order.save()
+#             return order, None
+#         return None, serializer.errors
+    
+#     # Create order
+#     order, errors = await sync_to_async(_prepare_checkout_sync)(data, user)
+    
+#     if order:
+#         # Create on-chain order
+#         program = await get_program()
+#         order_id = order.order_id
+#         price = int(float(order.total_price) * 10**6)  # USDC decimals=6
+        
+#         order_pda = Pubkey.find_program_address(
+#             [b"order", order_id.to_bytes(8, 'le')],
+#             PROGRAM_ID
+#         )[0]
+        
+#         await program.rpc["add_order"](order_id, price, ctx={"accounts": {
+#             "order": order_pda,
+#             "vendor": VENDOR_KEYPAIR.public_key,
+#             "system_program": SYS_PROGRAM_ID,
+#         }})
+        
+#         return JsonResponse({
+#             'orderId': order_id,
+#             'price': price,
+#             'vendor': str(VENDOR_PUBKEY),
+#             'mint': str(MINT),
+#         })
+    
+#     return JsonResponse(errors, status=400)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])  # Changed to JWT!
+@permission_classes([IsAuthenticated])
+def prepare_checkout(request):
+    """Using JWT authentication instead of Token authentication"""
+    
+    # User is already authenticated by decorators
+    user = request.user
+    
+    # Parse data
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    # Create order
+    serializer = OrderCreateSerializer(data=data)
+    if serializer.is_valid():
+        order = serializer.save(vendor=str(VENDOR_PUBKEY), user=user)
+        
+        # Create on-chain order (convert async function to sync)
+        try:
             order_id = order.order_id
             price = int(float(order.total_price) * 10**6)  # USDC decimals=6
+            
+            # Call async Solana functions synchronously
+            program = async_to_sync(get_program)()
             
             order_pda = Pubkey.find_program_address(
                 [b"order", order_id.to_bytes(8, 'le')],
                 PROGRAM_ID
             )[0]
             
-            await program.rpc["add_order"](order_id, price, ctx={"accounts": {
-                "order": order_pda,
-                "vendor": VENDOR_KEYPAIR.public_key,
-                "system_program": SYS_PROGRAM_ID,
-            }})
+            async_to_sync(program.rpc["add_order"])(
+                order_id, 
+                price, 
+                ctx={"accounts": {
+                    "order": order_pda,
+                    "vendor": VENDOR_KEYPAIR.public_key,
+                    "system_program": SYS_PROGRAM_ID,
+                }}
+            )
             
             return JsonResponse({
-                'orderId': order_id,
+                'orderId': str(order_id),
                 'price': price,
                 'vendor': str(VENDOR_PUBKEY),
                 'mint': str(MINT),
             })
-        return JsonResponse(serializer.errors, status=400)
-    return JsonResponse({'error': 'Invalid method'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'Blockchain error: {str(e)}'}, status=500)
+    
+    return JsonResponse(serializer.errors, status=400)
 
 @csrf_exempt
 async def save_transaction(request):
@@ -138,7 +300,13 @@ class ProductRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
 class OrderListApiView(generics.ListAPIView):
     queryset = Order.objects.prefetch_related('items__product')
     serializer_class = OrderSerializer
+    # permission_classes = [IsAuthenticated]
     permission_classes = [IsAdminUser]
+
+    # def get_serializer_class(self):
+    #     if self.request.method == "POST":
+    #         return OrderCreateSerializer
+    #     return OrderSerializer
 
 class OrderCreateApiView(generics.CreateAPIView):
     queryset = Order.objects.all()
@@ -150,6 +318,7 @@ class UserOrderListApiView(generics.ListAPIView):
     queryset = Order.objects.prefetch_related('items__product')
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -321,3 +490,6 @@ Purpose: Sign this message to verify wallet ownership and continue login.
                 "tokens": tokens
             }
         )
+    
+
+   

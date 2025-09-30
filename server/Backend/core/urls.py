@@ -12,4 +12,6 @@ urlpatterns = [
 #    path("api/user/request-challenge/", views.RequestChallenge.as_view(), name="login"),
     path("api/user/verify-login/", views.VerifyLoginView.as_view(), name="login"),
 #    path("users", views.UserListApiView.as_view(), name="users"),
+    path('api/prepare_checkout/', views.prepare_checkout, name='prepare_checkout'),
+    path('api/save_transaction/', views.save_transaction, name='save_transaction'),
 ]

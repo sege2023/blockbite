@@ -89,6 +89,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Backend.wsgi.application'
+# Use ASGI application
+ASGI_APPLICATION = "Backend.asgi.application"
 
 
 # Database
@@ -172,12 +174,12 @@ else:
 #    }
 
 
-#DATABASES = {
-#    "default": {
-#        "ENGINE": "django.db.backends.sqlite3",
-#        "NAME": BASE_DIR / "db.sqlite3",
-#    }
-#}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 
 # Password validation
