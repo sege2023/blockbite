@@ -317,7 +317,7 @@ class OrderCreateApiView(generics.CreateAPIView):
 class UserOrderListApiView(generics.ListAPIView):
     queryset = Order.objects.prefetch_related('items__product')
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated]
     # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):

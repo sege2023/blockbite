@@ -231,11 +231,14 @@ const CartPage = () => {
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/orders/", {
+        const res = await fetch("http://127.0.0.1:8000/user-orders/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch cart");
         const data = await res.json();
+
+        console.log("API Response:", data);
+        console.log("First item:", data.results[0]?.items[0]);
 
         const items =
           data.results[0]?.items.map((item) => ({
@@ -267,16 +270,32 @@ const CartPage = () => {
     pendingUpdates.current = {};
 
     try {
-      for (const productId in updates) {
-        const quantity = updates[productId];
-        await fetch("http://127.0.0.1:8000/orders/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ product_id: productId, quantity }),
-        });
+      // Convert updates object to items array format, filter out removed items
+      const items = Object.entries(updates)
+        .filter(([productId, quantity]) => quantity > 0)
+        .map(([productId, quantity]) => ({
+          product: parseInt(productId, 10),
+          quantity: quantity
+        }));
+
+      // If no items to update, skip the request
+      if (items.length === 0) return;
+
+      console.log("Sending to backend:", { items });
+      console.log("Raw updates object:", updates);
+
+      const response = await fetch("http://127.0.0.1:8000/create-orders/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ items }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to flush cart updates:", errorData);
       }
     } catch (err) {
       console.error("Failed to flush cart updates:", err);
