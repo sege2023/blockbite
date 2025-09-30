@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setCart } from "../store/cartSlice";
 
 const CartPage = () => {
-  const cartItems = useSelector((state) => state.cart.items);
+  const cartItems = useSelector((state) => state.cart?.items || []);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const CartPage = () => {
           data.results[0]?.items.map((item) => ({
             productId: item.product_id,
             name: item.product_name,
-            description: item.product_description || "",
+            description: item.product_description || item.description || "",
             price: Number(item.product_price),
             quantity: item.quantity,
             image: item.product_image || "",
@@ -52,7 +52,7 @@ const CartPage = () => {
     fetchCart();
   }, [dispatch, token]);
 
-  const flushUpdates = async () => {
+  const flushUpdates = useCallback(async () => {
     if (!token || Object.keys(pendingUpdates.current).length === 0) return;
 
     const updates = pendingUpdates.current;
@@ -60,10 +60,10 @@ const CartPage = () => {
 
     try {
       const items = Object.entries(updates)
-        .filter(([productId, quantity]) => quantity > 0)
-        .map(([productId, quantity]) => ({
-          product: parseInt(productId, 10),
-          quantity: quantity,
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([id, quantity]) => ({
+          product: parseInt(id, 10),
+          quantity,
         }));
 
       if (items.length === 0) return;
@@ -79,7 +79,7 @@ const CartPage = () => {
     } catch (err) {
       console.error("Failed to flush cart updates:", err);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     const interval = setInterval(flushUpdates, 2000);
@@ -87,7 +87,7 @@ const CartPage = () => {
       clearInterval(interval);
       flushUpdates();
     };
-  }, []);
+  }, [flushUpdates]);
 
   const updateQuantity = (productId, delta) => {
     const item = cartItems.find((p) => p.productId === productId);
@@ -122,14 +122,13 @@ const CartPage = () => {
         {cartItems.map((item) => (
           <div key={item.productId} className="cart-item">
             <img
-              src={item.image || "https://via.placeholder.com/80"}
+              src={item.image || "https://dummyimage.com/80x80/cccccc/000000.png&text=Product"}
+              alt={item.name}
               className="cart-item-image"
             />
             <div className="cart-item-details">
               <h3>{item.name}</h3>
-              <p className="description">
-                {item.description || "No description"}
-              </p>
+              <p className="description">{item.description}</p>
               <p className="price">${item.price.toFixed(2)}</p>
             </div>
             <div className="quantity-controls">
@@ -152,16 +151,10 @@ const CartPage = () => {
       </div>
 
       <div className="cart-actions">
-        <button
-          className="continue-btn"
-          onClick={() => navigate("/vendors")}
-        >
+        <button className="continue-btn" onClick={() => navigate("/vendors")}>
           Continue Shopping
         </button>
-        <button
-          className="checkout-btn"
-          onClick={() => navigate("/checkout")}
-        >
+        <button className="checkout-btn" onClick={() => navigate("/checkout")}>
           Checkout
         </button>
       </div>

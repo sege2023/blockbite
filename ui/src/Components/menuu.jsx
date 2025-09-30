@@ -28,7 +28,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
         localStorage.setItem("token", data.access);
         return true;
       } else {
-        // Refresh token is also invalid
+        
         localStorage.removeItem("token");
         localStorage.removeItem("refresh");
         return false;
@@ -39,14 +39,14 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     }
   };
 
-  // Generic fetch with auth and retry
+  
   const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No token available");
     }
 
-    // Using Bearer token format (required by rest_framework_simplejwt)
+    
     let res = await fetch(url, {
       ...options,
       headers: {
@@ -56,7 +56,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
       },
     });
 
-    // If 401, try refreshing token
+    
     if (res.status === 401) {
       console.log("Token expired, attempting refresh...");
       const refreshed = await refreshToken();
@@ -72,7 +72,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
           },
         });
       } else {
-        // Refresh failed, redirect to login
+        
         alert("Session expired. Please login again.");
         navigate("/");
         throw new Error("Authentication failed");
@@ -82,7 +82,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     return res;
   };
 
-  // Add product to cart and create backend order
+  
   const handleAddToCart = async (product) => {
     dispatch(
       addToCart({
@@ -157,7 +157,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
     fetchProducts();
   }, [navigate]);
 
-  // Fetch cart from /user-orders/
+  
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -212,9 +212,9 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
   }, [products, activeFilter, searchQuery]);
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return "https://via.placeholder.com/150";
+    if (!imagePath) return "https://dummyimage.com/80x80/cccccc/000000.png&text=Product";
     if (imagePath.startsWith("http")) return imagePath;
-    // Clean up path to avoid double slashes
+    
     const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
     return `http://127.0.0.1:8000${cleanPath}`;
   };

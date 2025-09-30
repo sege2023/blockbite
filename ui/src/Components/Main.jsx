@@ -1,16 +1,53 @@
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setCart } from "../store/cartSlice";
 
-const Main = () => {
-  const cartItems = useSelector((state) => state.cart.items);
-  const token = localStorage.getItem("token");
+const CheckoutPage = () => {
+  const cartItems = useSelector((state) => state.cart.items || []);
   const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
 
-  if (cartItems.length === 0) {
-    return <p className="empty-checkout">Your cart is empty</p>;
-  }
+  // Fetch cart from server on page load
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/user-orders/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch cart");
+
+        const data = await res.json();
+
+        const items =
+          data.results[0]?.items.map((item) => ({
+            productId: item.product_id,
+            name: item.product_name,
+            description: item.product_description || "",
+            price: Number(item.product_price),
+            quantity: item.quantity,
+            image: item.product_image || "",
+          })) || [];
+
+        dispatch(setCart(items));
+      } catch (err) {
+        console.error("Cart fetch failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [dispatch, token]);
+
+  if (loading) return <p>Loading checkout...</p>;
+  if (cartItems.length === 0) return <p>Your cart is empty</p>;
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -49,7 +86,7 @@ const Main = () => {
       }
 
       alert("Order placed successfully!");
-      dispatch(setCart([])); 
+      dispatch(setCart([]));
     } catch (err) {
       console.error("Error placing order:", err);
       alert("Something went wrong");
@@ -58,9 +95,7 @@ const Main = () => {
 
   return (
     <div className="checkout-page">
-
       <div className="order-summary-card">
-        
         <div className="summary-row">
           <span>Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
@@ -73,7 +108,6 @@ const Main = () => {
           <span>Delivery Fee</span>
           <span>${deliveryFee.toFixed(2)}</span>
         </div>
-
         <div className="summary-total">
           <span>Total</span>
           <span>${total.toFixed(2)}</span>
@@ -87,4 +121,4 @@ const Main = () => {
   );
 };
 
-export default Main;
+export default CheckoutPage;
