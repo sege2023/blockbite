@@ -15,56 +15,55 @@ const Login = () => {
 
     setLoading(true);
     try {
-      // 1. Request challenge from backend
+      // 1. Request challenge
       const challengeRes = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          wallet_address: publicKey.toBase58(), // always string
+          wallet_address: publicKey.toBase58(),
         }),
       });
 
       if (!challengeRes.ok) {
         const errText = await challengeRes.text();
-        console.error("Challenge API error:", challengeRes.status, errText);
-        alert("Challenge API failed: " + errText);
-        
+        alert("Challenge failed: " + errText);
         return;
       }
 
-      // Expecting both `nonce` and `message`
       const { nonce, message } = await challengeRes.json();
 
-      // 2. Sign full message (backend must send the formatted string)
+      // 2. Sign the message
       const encodedMessage = new TextEncoder().encode(message);
       const signature = await signMessage(encodedMessage);
 
-      // 3. Send signature to backend for verification
+      // 3. Verify signature
       const verifyRes = await fetch(
         "http://127.0.0.1:8000/api/user/verify-login/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            wallet_address: publicKey.toBase58(), // string
-            signature: bs58.encode(signature), // base58 string
-            nonce: nonce,
+            wallet_address: publicKey.toBase58(),
+            signature: bs58.encode(signature),
+            nonce,
           }),
         }
       );
 
       const data = await verifyRes.json();
+
       if (verifyRes.ok) {
+        // ✅ Save both tokens
         localStorage.setItem("token", data.tokens.access);
+        localStorage.setItem("refresh", data.tokens.refresh);
+
         alert("Login successful");
         window.location.href = "/vendors";
       } else {
-        console.error("Verify error:", data);
         alert("Login failed: " + JSON.stringify(data));
-        window.location.href = "/vendors";
       }
     } catch (err) {
-      console.error("Login failed:", err);
+      console.error("Login error:", err);
       alert("Login failed. Try again.");
     } finally {
       setLoading(false);
@@ -80,7 +79,7 @@ const Login = () => {
       <WalletButton />
 
       {loading && (
-        <p className="text-center text-sm mt-2 text-gray-400 aut">
+        <p className="text-center text-sm mt-2 text-gray-400">
           Authenticating...
         </p>
       )}
