@@ -533,7 +533,7 @@ const CartPage = () => {
             await connection.confirmTransaction(signature, "confirmed");
 
             // D. Notify Express Backend of success (to save signature in DB)
-            const confirmResponse = await fetch("http://localhost:3000/api/checkout/confirm", {
+            const confirmResponse = await fetch("https://blockbite-proto-server.onrender.com/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 

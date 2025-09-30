@@ -66,7 +66,7 @@ const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5174', // Your frontend URL
+    origin: ['http://localhost:5174', 'https://blockbite.pages.dev'],
     credentials: true
 }));
 
