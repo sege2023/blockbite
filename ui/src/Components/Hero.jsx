@@ -430,6 +430,7 @@ import { setCart, clearCart } from "../store/cartSlice";
 import { PublicKey, Transaction } from "@solana/web3.js"; // <-- Import Transaction
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { loadCart, saveCart, CART_STORAGE_KEY } from "./cartStorage"; // <-- Import loadCart/saveCart/KEY
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
     const cartItems = useSelector((state) => state.cart.items);
@@ -438,6 +439,7 @@ const CartPage = () => {
     const { connection } = useConnection();
     const [loading, setLoading] = useState(false); // No more initial API loading
     const [checkoutStatus, setCheckoutStatus] = useState("idle");
+    const navigate = useNavigate(); 
 
     // 1. Initial Load: Load cart from Local Storage to Redux
     useEffect(() => {
@@ -567,37 +569,88 @@ const CartPage = () => {
     const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <div className="cart-page">
-            <h2>Cart Summary</h2>
-            {cartItems.map((item) => (
-                <div key={item.productId} className="cart-item">
-                    <img
-                        src={item.image || "https://via.placeholder.com/100"}
-                        alt={item.name}
-                        className="cart-item-image"
-                    />
-                    <div className="cart-item-details">
-                        <h3>{item.name}</h3>
-                        <p>\${item.price.toFixed(2)} x {item.quantity}</p>
-                        <div className="quantity-controls">
-                            <button onClick={() => decreaseQuantity(item.productId)} disabled={checkoutStatus === "processing"}>-</button>
-                            <span>{item.quantity}</span>
-                            <button onClick={() => increaseQuantity(item.productId)} disabled={checkoutStatus === "processing"}>+</button>
-                        </div>
-                    </div>
-                </div>
-            ))}
+        // <div className="cart-page">
+        //     <h2>Cart Summary</h2>
+        //     {cartItems.map((item) => (
+        //         <div key={item.productId} className="cart-item">
+        //             <img
+        //                 src={item.image || "https://via.placeholder.com/100"}
+        //                 alt={item.name}
+        //                 className="cart-item-image"
+        //             />
+        //             <div className="cart-item-details">
+        //                 <h3>{item.name}</h3>
+        //                 <p>\${item.price.toFixed(2)} x {item.quantity}</p>
+        //                 <div className="quantity-controls">
+        //                     <button onClick={() => decreaseQuantity(item.productId)} disabled={checkoutStatus === "processing"}>-</button>
+        //                     <span>{item.quantity}</span>
+        //                     <button onClick={() => increaseQuantity(item.productId)} disabled={checkoutStatus === "processing"}>+</button>
+        //                 </div>
+        //             </div>
+        //         </div>
+        //     ))}
             
-            <div className="cart-summary">
-                <p>Total: \${totalPrice.toFixed(2)}</p>
-                <button onClick={handleCheckout} disabled={checkoutStatus === "processing" || !publicKey}>
-                    {checkoutStatus === "processing" ? "Processing Transaction..." : "Proceed to Checkout (Solana Pay)"}
-                </button>
-                {checkoutStatus === "success" && <p style={{color: 'green'}}>✅ Payment successful! Order placed.</p>}
-                {checkoutStatus === "error" && <p style={{color: 'red'}}>❌ Checkout failed. Check wallet connection and console.</p>}
-                {!publicKey && <p style={{color: 'orange'}}>Please connect your Solana wallet to checkout.</p>}
+        //     <div className="cart-summary">
+        //         <p>Total: \${totalPrice.toFixed(2)}</p>
+        //         <button onClick={handleCheckout} disabled={checkoutStatus === "processing" || !publicKey}>
+        //             {checkoutStatus === "processing" ? "Processing Transaction..." : "Proceed to Checkout (Solana Pay)"}
+        //         </button>
+        //         {checkoutStatus === "success" && <p style={{color: 'green'}}>✅ Payment successful! Order placed.</p>}
+        //         {checkoutStatus === "error" && <p style={{color: 'red'}}>❌ Checkout failed. Check wallet connection and console.</p>}
+        //         {!publicKey && <p style={{color: 'orange'}}>Please connect your Solana wallet to checkout.</p>}
+        //     </div>
+        // </div>
+
+    <div className="cart-page">
+      <h2 className="cart-title">Your Cart</h2>
+
+      <div className="cart-items">
+        {cartItems.map((item) => (
+          <div key={item.productId} className="cart-item">
+            <img
+              src={item.image || "https://dummyimage.com/80x80/cccccc/000000.png&text=Product"}
+              alt={item.name}
+              className="cart-item-image"
+            />
+            <div className="cart-item-details">
+              <h3>{item.name}</h3>
+              <p className="description">{item.description}</p>
+              {/* <p className="price">${item.price.toFixed(2)}</p> */}
+             <p>${item.price.toFixed(2)} x {item.quantity}</p>
+              
             </div>
-        </div>
+            <div className="quantity-controls">
+              <button
+                onClick={() => decreaseQuantity(item.productId)}
+                className="decrease"
+              >
+                -
+              </button>
+              <span>{item.quantity}</span>
+              <button
+                onClick={() => increaseQuantity(item.productId)}
+                className="increase"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="cart-actions">
+        <p>Total: ${totalPrice.toFixed(2)}</p>
+        <button className="continue-btn" onClick={() => navigate("/")}>
+          Continue Shopping
+        </button>
+        <button className="checkout-btn" onClick={handleCheckout} disabled={checkoutStatus === "processing" || !publicKey}>
+           {checkoutStatus === "processing" ? "Processing Transaction..." : "Proceed to Checkout (Solana Pay)"}
+       </button>
+        {checkoutStatus === "success" && <p style={{color: 'green'}}>✅ Payment successful! Order placed.</p>}
+        {checkoutStatus === "error" && <p style={{color: 'red'}}>❌ Checkout failed. Check wallet connection and console.</p>}
+        {!publicKey && <p style={{color: 'orange'}}>Please connect your Solana wallet to checkout.</p>}
+      </div>
+    </div>
     );
 };
 

@@ -249,11 +249,13 @@ const SINGLE_VENDOR_PUBKEY = "CZmkNn3pixHtcWF5dRPY87Pd2uyJWrvgtN8rmbiQGGkZ";
 // Assuming all products are from the same vendor for now.
 // import eba from 'C:\Users\user\desktop\projects\blockbitev2\ui\public\images\eba.jpg'
 import eba from '../assets/eba.jpg'
+import pepsi from '../assets/pepsi.jpg'
+import jollof from '../assets/Jollofrice.jpg'
 const MOCK_PRODUCTS = [
-    { id: 1, name: "Jollof Rice", description: "Spicy rice with chicken", price: 20, stock: 5, category: "Rice", image: eba, vendor: SINGLE_VENDOR_PUBKEY },
+    { id: 1, name: "Jollof Rice", description: "Spicy rice with chicken", price: 20, stock: 5, category: "Rice", image: jollof, vendor: SINGLE_VENDOR_PUBKEY },
     { id: 2, name: "Semo & Soup", description: "Hot semo and Egusi soup", price: 25, stock: 2, category: "Swallow", image: eba, vendor: SINGLE_VENDOR_PUBKEY },
-    { id: 3, name: "Coke", description: "Chilled soft drink", price: 8, stock: 10, category: "Drinks", image: eba, vendor: SINGLE_VENDOR_PUBKEY },
-    { id: 4, name: "Pizza Slice", description: "Pepperoni slice", price: 15, stock: 8, category: "Snacks", image: eba, vendor: SINGLE_VENDOR_PUBKEY },
+    { id: 3, name: "Pepsi", description: "Chilled soft drink", price: 8, stock: 10, category: "Drinks", image: pepsi, vendor: SINGLE_VENDOR_PUBKEY },
+    { id: 4, name: "Hamburger", description: "Hamburger", price: 15, stock: 8, category: "Snacks", image: eba, vendor: SINGLE_VENDOR_PUBKEY },
 ];
 // -----------------------------
 
@@ -360,7 +362,7 @@ const MenuPage = ({ searchQuery, activeFilter }) => {
                         <div className="iitem__details">
                             <h3>{product.name}</h3>
                             <p className="desc">{product.description}</p>
-                            <p className="price">\$ {product.price.toFixed(2)}</p>
+                            <p className="price">$ {product.price.toFixed(2)}</p>
                             <p className="stock">
                                 {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
                             </p>
